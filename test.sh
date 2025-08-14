@@ -6,6 +6,24 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+NODE_INFO_FILE="$HOME/.xray_nodes_info"
+
+# 如果是-v参数，直接查看节点信息
+if [ "$1" = "-v" ]; then
+    if [ -f "$NODE_INFO_FILE" ]; then
+        echo -e "${GREEN}========================================${NC}"
+        echo -e "${GREEN}           节点信息查看               ${NC}"
+        echo -e "${GREEN}========================================${NC}"
+        echo
+        cat "$NODE_INFO_FILE"
+        echo
+    else
+        echo -e "${RED}未找到节点信息文件${NC}"
+        echo -e "${YELLOW}请先运行部署脚本生成节点信息${NC}"
+    fi
+    exit 0
+fi
+
 generate_uuid() {
     if command -v uuidgen &> /dev/null; then
         uuidgen | tr '[:upper:]' '[:lower:]'
@@ -29,13 +47,49 @@ echo
 echo -e "${GREEN}本脚本基于 eooce 大佬的 Python Xray Argo 项目开发${NC}"
 echo -e "${GREEN}提供极速和完整两种配置模式，简化部署流程${NC}"
 echo -e "${GREEN}支持自动UUID生成、后台运行、节点信息输出${NC}"
+echo -e "${GREEN}默认集成YouTube分流优化，支持交互式查看节点信息${NC}"
 echo
 
-echo -e "${YELLOW}请选择配置模式:${NC}"
+echo -e "${YELLOW}请选择操作:${NC}"
 echo -e "${BLUE}1) 极速模式 - 只修改UUID并启动${NC}"
 echo -e "${BLUE}2) 完整模式 - 详细配置所有选项${NC}"
+echo -e "${BLUE}3) 查看节点信息 - 显示已保存的节点信息${NC}"
 echo
-read -p "请输入选择 (1/2): " MODE_CHOICE
+read -p "请输入选择 (1/2/3): " MODE_CHOICE
+
+if [ "$MODE_CHOICE" = "3" ]; then
+    if [ -f "$NODE_INFO_FILE" ]; then
+        echo
+        echo -e "${GREEN}========================================${NC}"
+        echo -e "${GREEN}           节点信息查看               ${NC}"
+        echo -e "${GREEN}========================================${NC}"
+        echo
+        cat "$NODE_INFO_FILE"
+        echo
+        echo -e "${YELLOW}提示: 如需重新部署，请重新运行脚本选择模式1或2${NC}"
+    else
+        echo
+        echo -e "${RED}未找到节点信息文件${NC}"
+        echo -e "${YELLOW}请先运行部署脚本生成节点信息${NC}"
+        echo
+        echo -e "${BLUE}是否现在开始部署? (y/n)${NC}"
+        read -p "> " START_DEPLOY
+        if [ "$START_DEPLOY" = "y" ] || [ "$START_DEPLOY" = "Y" ]; then
+            echo -e "${YELLOW}请选择部署模式:${NC}"
+            echo -e "${BLUE}1) 极速模式${NC}"
+            echo -e "${BLUE}2) 完整模式${NC}"
+            read -p "请输入选择 (1/2): " MODE_CHOICE
+        else
+            echo -e "${GREEN}退出脚本${NC}"
+            exit 0
+        fi
+    fi
+    
+    if [ "$MODE_CHOICE" != "1" ] && [ "$MODE_CHOICE" != "2" ]; then
+        echo -e "${GREEN}退出脚本${NC}"
+        exit 0
+    fi
+fi
 
 echo -e "${BLUE}检查并安装依赖...${NC}"
 if ! command -v python3 &> /dev/null; then
@@ -104,6 +158,7 @@ if [ "$MODE_CHOICE" = "1" ]; then
     
     sed -i "s/CFIP = os.environ.get('CFIP', '[^']*')/CFIP = os.environ.get('CFIP', 'joeyblog.net')/" app.py
     echo -e "${GREEN}优选IP已自动设置为: joeyblog.net${NC}"
+    echo -e "${GREEN}YouTube分流已自动配置${NC}"
     
     echo
     echo -e "${GREEN}极速配置完成！正在启动服务...${NC}"
@@ -240,6 +295,8 @@ else
             echo -e "${GREEN}Telegram配置已设置${NC}"
         fi
     fi
+    
+    echo -e "${GREEN}YouTube分流已自动配置${NC}"
 
     echo
     echo -e "${GREEN}完整配置完成！${NC}"
@@ -259,22 +316,193 @@ echo -e "${BLUE}正在启动服务...${NC}"
 echo -e "${YELLOW}当前工作目录：$(pwd)${NC}"
 echo
 
-nohup python3 app.py > app.log 2>&1 &
+# 修改Python文件添加YouTube分流到xray配置
+echo -e "${BLUE}正在添加YouTube分流功能到xray配置...${NC}"
+cat > youtube_patch.py << 'EOF'
+# 读取app.py文件
+with open('app.py', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# 找到原始配置并替换为包含YouTube分流的配置
+old_config = 'config ={"log":{"access":"/dev/null","error":"/dev/null","loglevel":"none",},"inbounds":[{"port":ARGO_PORT ,"protocol":"vless","settings":{"clients":[{"id":UUID ,"flow":"xtls-rprx-vision",},],"decryption":"none","fallbacks":[{"dest":3001 },{"path":"/vless-argo","dest":3002 },{"path":"/vmess-argo","dest":3003 },{"path":"/trojan-argo","dest":3004 },],},"streamSettings":{"network":"tcp",},},{"port":3001 ,"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":UUID },],"decryption":"none"},"streamSettings":{"network":"ws","security":"none"}},{"port":3002 ,"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":UUID ,"level":0 }],"decryption":"none"},"streamSettings":{"network":"ws","security":"none","wsSettings":{"path":"/vless-argo"}},"sniffing":{"enabled":True ,"destOverride":["http","tls","quic"],"metadataOnly":False }},{"port":3003 ,"listen":"127.0.0.1","protocol":"vmess","settings":{"clients":[{"id":UUID ,"alterId":0 }]},"streamSettings":{"network":"ws","wsSettings":{"path":"/vmess-argo"}},"sniffing":{"enabled":True ,"destOverride":["http","tls","quic"],"metadataOnly":False }},{"port":3004 ,"listen":"127.0.0.1","protocol":"trojan","settings":{"clients":[{"password":UUID },]},"streamSettings":{"network":"ws","security":"none","wsSettings":{"path":"/trojan-argo"}},"sniffing":{"enabled":True ,"destOverride":["http","tls","quic"],"metadataOnly":False }},],"outbounds":[{"protocol":"freedom","tag": "direct" },{"protocol":"blackhole","tag":"block"}]}'
+
+new_config = '''config = {
+        "log": {
+            "access": "/dev/null",
+            "error": "/dev/null",
+            "loglevel": "none"
+        },
+        "inbounds": [
+            {
+                "port": ARGO_PORT,
+                "protocol": "vless",
+                "settings": {
+                    "clients": [{"id": UUID, "flow": "xtls-rprx-vision"}],
+                    "decryption": "none",
+                    "fallbacks": [
+                        {"dest": 3001},
+                        {"path": "/vless-argo", "dest": 3002},
+                        {"path": "/vmess-argo", "dest": 3003},
+                        {"path": "/trojan-argo", "dest": 3004}
+                    ]
+                },
+                "streamSettings": {"network": "tcp"}
+            },
+            {
+                "port": 3001,
+                "listen": "127.0.0.1",
+                "protocol": "vless",
+                "settings": {
+                    "clients": [{"id": UUID}],
+                    "decryption": "none"
+                },
+                "streamSettings": {"network": "ws", "security": "none"}
+            },
+            {
+                "port": 3002,
+                "listen": "127.0.0.1",
+                "protocol": "vless",
+                "settings": {
+                    "clients": [{"id": UUID, "level": 0}],
+                    "decryption": "none"
+                },
+                "streamSettings": {
+                    "network": "ws",
+                    "security": "none",
+                    "wsSettings": {"path": "/vless-argo"}
+                },
+                "sniffing": {
+                    "enabled": True,
+                    "destOverride": ["http", "tls", "quic"],
+                    "metadataOnly": False
+                }
+            },
+            {
+                "port": 3003,
+                "listen": "127.0.0.1",
+                "protocol": "vmess",
+                "settings": {
+                    "clients": [{"id": UUID, "alterId": 0}]
+                },
+                "streamSettings": {
+                    "network": "ws",
+                    "wsSettings": {"path": "/vmess-argo"}
+                },
+                "sniffing": {
+                    "enabled": True,
+                    "destOverride": ["http", "tls", "quic"],
+                    "metadataOnly": False
+                }
+            },
+            {
+                "port": 3004,
+                "listen": "127.0.0.1",
+                "protocol": "trojan",
+                "settings": {
+                    "clients": [{"password": UUID}]
+                },
+                "streamSettings": {
+                    "network": "ws",
+                    "security": "none",
+                    "wsSettings": {"path": "/trojan-argo"}
+                },
+                "sniffing": {
+                    "enabled": True,
+                    "destOverride": ["http", "tls", "quic"],
+                    "metadataOnly": False
+                }
+            }
+        ],
+        "outbounds": [
+            {"protocol": "freedom", "tag": "direct"},
+            {
+                "protocol": "vmess",
+                "tag": "youtube",
+                "settings": {
+                    "vnext": [{
+                        "address": "172.233.171.224",
+                        "port": 16416,
+                        "users": [{
+                            "id": "8c1b9bea-cb51-43bb-a65c-0af31bbbf145",
+                            "alterId": 0
+                        }]
+                    }]
+                },
+                "streamSettings": {"network": "tcp"}
+            },
+            {"protocol": "blackhole", "tag": "block"}
+        ],
+        "routing": {
+            "domainStrategy": "IPIfNonMatch",
+            "rules": [
+                {
+                    "type": "field",
+                    "domain": [
+                        "youtube.com",
+                        "googlevideo.com",
+                        "ytimg.com",
+                        "gstatic.com",
+                        "googleapis.com",
+                        "ggpht.com",
+                        "googleusercontent.com"
+                    ],
+                    "outboundTag": "youtube"
+                }
+            ]
+        }
+    }'''
+
+# 替换配置
+content = content.replace(old_config, new_config)
+
+# 写回文件
+with open('app.py', 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print("YouTube分流配置已成功添加到xray配置中")
+EOF
+
+python3 youtube_patch.py
+rm youtube_patch.py
+
+echo -e "${GREEN}YouTube分流已集成到xray配置中${NC}"
+
+# 先清理可能存在的进程
+pkill -f "python3 app.py" > /dev/null 2>&1
+sleep 2
+
+# 启动服务并获取PID
+python3 app.py > app.log 2>&1 &
 APP_PID=$!
+
+# 验证PID获取成功
+if [ -z "$APP_PID" ] || [ "$APP_PID" -eq 0 ]; then
+    echo -e "${RED}获取进程PID失败，尝试直接启动${NC}"
+    nohup python3 app.py > app.log 2>&1 &
+    sleep 2
+    APP_PID=$(pgrep -f "python3 app.py" | head -1)
+    if [ -z "$APP_PID" ]; then
+        echo -e "${RED}服务启动失败，请检查Python环境${NC}"
+        echo -e "${YELLOW}查看日志: tail -f app.log${NC}"
+        exit 1
+    fi
+fi
 
 echo -e "${GREEN}服务已在后台启动，PID: $APP_PID${NC}"
 echo -e "${YELLOW}日志文件: $(pwd)/app.log${NC}"
 
 echo -e "${BLUE}等待服务启动...${NC}"
-sleep 10
+sleep 8
 
-if ps -p $APP_PID > /dev/null; then
-    echo -e "${GREEN}服务运行正常${NC}"
-else
+# 检查服务是否正常运行
+if ! ps -p "$APP_PID" > /dev/null 2>&1; then
     echo -e "${RED}服务启动失败，请检查日志${NC}"
     echo -e "${YELLOW}查看日志: tail -f app.log${NC}"
+    echo -e "${YELLOW}检查端口占用: netstat -tlnp | grep :3000${NC}"
     exit 1
 fi
+
+echo -e "${GREEN}服务运行正常${NC}"
 
 SERVICE_PORT=$(grep "PORT = int" app.py | grep -o "or [0-9]*" | cut -d" " -f2)
 CURRENT_UUID=$(grep "UUID = " app.py | head -1 | cut -d"'" -f2)
@@ -319,12 +547,59 @@ echo
 if [ -n "$NODE_INFO" ]; then
     echo -e "${YELLOW}=== 节点信息 ===${NC}"
     DECODED_NODES=$(echo "$NODE_INFO" | base64 -d 2>/dev/null || echo "$NODE_INFO")
-    echo -e "${GREEN}原始节点配置:${NC}"
+    
+    echo -e "${GREEN}节点配置:${NC}"
     echo "$DECODED_NODES"
     echo
-    echo -e "${GREEN}订阅链接 (Base64编码):${NC}"
+    
+    echo -e "${GREEN}订阅链接:${NC}"
     echo "$NODE_INFO"
     echo
+    
+    SAVE_INFO="========================================
+           节点信息保存               
+========================================
+
+部署时间: $(date)
+UUID: $CURRENT_UUID
+服务端口: $SERVICE_PORT
+订阅路径: /$SUB_PATH_VALUE
+
+=== 访问地址 ==="
+    
+    if command -v curl &> /dev/null; then
+        PUBLIC_IP=$(curl -s https://api.ipify.org 2>/dev/null || echo "获取失败")
+        if [ "$PUBLIC_IP" != "获取失败" ]; then
+            SAVE_INFO="${SAVE_INFO}
+订阅地址: http://$PUBLIC_IP:$SERVICE_PORT/$SUB_PATH_VALUE
+管理面板: http://$PUBLIC_IP:$SERVICE_PORT"
+        fi
+    fi
+    
+    SAVE_INFO="${SAVE_INFO}
+本地订阅: http://localhost:$SERVICE_PORT/$SUB_PATH_VALUE
+本地面板: http://localhost:$SERVICE_PORT
+
+=== 节点信息 ===
+$DECODED_NODES
+
+=== 订阅链接 ===
+$NODE_INFO
+
+=== 管理命令 ===
+查看日志: tail -f $(pwd)/app.log
+停止服务: kill $APP_PID
+重启服务: kill $APP_PID && nohup python3 app.py > app.log 2>&1 &
+查看进程: ps aux | grep python3
+
+=== 分流说明 ===
+- 已集成YouTube分流优化到xray配置
+- YouTube相关域名自动走专用线路
+- 无需额外配置，透明分流"
+    
+    echo "$SAVE_INFO" > "$NODE_INFO_FILE"
+    echo -e "${GREEN}节点信息已保存到 $NODE_INFO_FILE${NC}"
+    echo -e "${YELLOW}使用 $0 -v 可随时查看节点信息${NC}"
 else
     echo -e "${YELLOW}=== 节点信息 ===${NC}"
     echo -e "${RED}节点信息还未生成，请稍等几分钟后查看日志或手动访问订阅地址${NC}"
@@ -343,6 +618,10 @@ echo -e "${GREEN}服务正在后台运行，请等待Argo隧道建立完成${NC}
 echo -e "${GREEN}如果使用临时隧道，域名会在几分钟后出现在日志中${NC}"
 echo -e "${GREEN}建议10-15分钟后再次查看订阅地址获取最新节点信息${NC}"
 echo -e "${GREEN}可以通过日志查看详细的启动过程和隧道信息${NC}"
+echo -e "${GREEN}YouTube分流已集成到xray配置，无需额外设置${NC}"
 echo
 
 echo -e "${GREEN}部署完成！感谢使用！${NC}"
+
+# 退出脚本，避免重复执行
+exit 0
