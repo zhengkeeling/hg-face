@@ -1099,7 +1099,7 @@ else
         echo -e "${YELLOW}是否设置自动保活 (每2分钟请求一次外部URL)? (y/n)${NC}"
         read -p "> " SETUP_KEEP_ALIVE
         if [ "$SETUP_KEEP_ALIVE" = "y" ] || [ "$SETUP_KEEP_ALIVE" = "Y" ]; then
-            echo -e "${YELLOW}请输入保活URL (必须是公开库或稳定网站的地址，留空则取消):${NC}"
+            echo -e "${YELLOW}请输入保活URL (例如https://joeyblog.net):${NC}"
             read -p "> " KEEP_ALIVE_URL_INPUT
             if [ -n "$KEEP_ALIVE_URL_INPUT" ]; then
                 if [[ "$KEEP_ALIVE_URL_INPUT" != http* ]]; then
