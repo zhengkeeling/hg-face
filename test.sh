@@ -12,7 +12,7 @@ NODE_INFO_FILE="$HOME/.xray_nodes_info"
 if [ "$1" = "-v" ]; then
     if [ -f "$NODE_INFO_FILE" ]; then
         echo -e "${GREEN}========================================${NC}"
-        echo -e "${GREEN}           节点信息查看               ${NC}"
+        echo -e "${GREEN}                      节点信息查看                      ${NC}"
         echo -e "${GREEN}========================================${NC}"
         echo
         cat "$NODE_INFO_FILE"
@@ -37,7 +37,7 @@ generate_uuid() {
 clear
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}    Python Xray Argo 一键部署脚本    ${NC}"
+echo -e "${GREEN}    Python Xray Argo 一键部署脚本   ${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo
 echo -e "${BLUE}基于项目: ${YELLOW}https://github.com/eooce/python-xray-argo${NC}"
@@ -61,7 +61,7 @@ if [ "$MODE_CHOICE" = "3" ]; then
     if [ -f "$NODE_INFO_FILE" ]; then
         echo
         echo -e "${GREEN}========================================${NC}"
-        echo -e "${GREEN}           节点信息查看               ${NC}"
+        echo -e "${GREEN}                      节点信息查看                      ${NC}"
         echo -e "${GREEN}========================================${NC}"
         echo
         cat "$NODE_INFO_FILE"
@@ -142,6 +142,9 @@ fi
 cp app.py app.py.backup
 echo -e "${YELLOW}已备份原始文件为 app.py.backup${NC}"
 
+# 初始化保活URL变量
+KEEP_ALIVE_URL=""
+
 if [ "$MODE_CHOICE" = "1" ]; then
     echo -e "${BLUE}=== 极速模式 ===${NC}"
     echo
@@ -158,8 +161,29 @@ if [ "$MODE_CHOICE" = "1" ]; then
     
     sed -i "s/CFIP = os.environ.get('CFIP', '[^']*')/CFIP = os.environ.get('CFIP', 'joeyblog.net')/" app.py
     echo -e "${GREEN}优选IP已自动设置为: joeyblog.net${NC}"
-    echo -e "${GREEN}YouTube分流已自动配置${NC}"
     
+    # --- 极速模式中的保活逻辑 ---
+    echo
+    echo -e "${YELLOW}是否设置自动保活 (每2分钟请求一次外部URL)? (y/n)${NC}"
+    read -p "> " SETUP_KEEP_ALIVE
+    if [ "$SETUP_KEEP_ALIVE" = "y" ] || [ "$SETUP_KEEP_ALIVE" = "Y" ]; then
+        echo -e "${YELLOW}请输入保活URL (必须是公开库或稳定网站的地址，留空则取消):${NC}"
+        read -p "> " KEEP_ALIVE_URL_INPUT
+        if [ -n "$KEEP_ALIVE_URL_INPUT" ]; then
+            if [[ "$KEEP_ALIVE_URL_INPUT" != http* ]]; then
+                echo -e "${RED}错误：URL格式不正确，必须以 http 或 https 开头。${NC}"
+                KEEP_ALIVE_URL=""
+            else
+                KEEP_ALIVE_URL="$KEEP_ALIVE_URL_INPUT"
+                echo -e "${GREEN}保活URL已设置为: $KEEP_ALIVE_URL${NC}"
+            fi
+        else
+            echo -e "${GREEN}已取消设置保活URL。${NC}"
+        fi
+    fi
+    # --- 保活逻辑结束 ---
+    
+    echo -e "${GREEN}YouTube分流已自动配置${NC}"
     echo
     echo -e "${GREEN}极速配置完成！正在启动服务...${NC}"
     echo
@@ -239,16 +263,25 @@ else
             echo -e "${GREEN}项目URL已设置${NC}"
         fi
 
-        echo -e "${YELLOW}当前自动保活状态: $(grep "AUTO_ACCESS = " app.py | grep -o "'[^']*'" | tail -1 | tr -d "'")${NC}"
-        echo -e "${YELLOW}是否启用自动保活? (y/n)${NC}"
-        read -p "> " AUTO_ACCESS_INPUT
-        if [ "$AUTO_ACCESS_INPUT" = "y" ] || [ "$AUTO_ACCESS_INPUT" = "Y" ]; then
-            sed -i "s/AUTO_ACCESS = os.environ.get('AUTO_ACCESS', '[^']*')/AUTO_ACCESS = os.environ.get('AUTO_ACCESS', 'true')/" app.py
-            echo -e "${GREEN}自动保活已启用${NC}"
-        elif [ "$AUTO_ACCESS_INPUT" = "n" ] || [ "$AUTO_ACCESS_INPUT" = "N" ]; then
-            sed -i "s/AUTO_ACCESS = os.environ.get('AUTO_ACCESS', '[^']*')/AUTO_ACCESS = os.environ.get('AUTO_ACCESS', 'false')/" app.py
-            echo -e "${GREEN}自动保活已禁用${NC}"
+        # --- 完整模式中的保活逻辑 ---
+        echo -e "${YELLOW}是否设置自动保活 (每2分钟请求一次外部URL)? (y/n)${NC}"
+        read -p "> " SETUP_KEEP_ALIVE
+        if [ "$SETUP_KEEP_ALIVE" = "y" ] || [ "$SETUP_KEEP_ALIVE" = "Y" ]; then
+            echo -e "${YELLOW}请输入保活URL (必须是公开库或稳定网站的地址，留空则取消):${NC}"
+            read -p "> " KEEP_ALIVE_URL_INPUT
+            if [ -n "$KEEP_ALIVE_URL_INPUT" ]; then
+                if [[ "$KEEP_ALIVE_URL_INPUT" != http* ]]; then
+                    echo -e "${RED}错误：URL格式不正确，必须以 http 或 https 开头。${NC}"
+                    KEEP_ALIVE_URL=""
+                else
+                    KEEP_ALIVE_URL="$KEEP_ALIVE_URL_INPUT"
+                    echo -e "${GREEN}保活URL已设置为: $KEEP_ALIVE_URL${NC}"
+                fi
+            else
+                echo -e "${GREEN}已取消设置保活URL。${NC}"
+            fi
         fi
+        # --- 保活逻辑结束 ---
 
         echo -e "${YELLOW}当前哪吒服务器: $(grep "NEZHA_SERVER = " app.py | cut -d"'" -f4)${NC}"
         read -p "请输入哪吒服务器地址 (留空保持不变): " NEZHA_SERVER_INPUT
@@ -309,6 +342,9 @@ echo -e "服务端口: $(grep "PORT = int" app.py | grep -o "or [0-9]*" | cut -d
 echo -e "优选IP: $(grep "CFIP = " app.py | cut -d"'" -f4)"
 echo -e "优选端口: $(grep "CFPORT = " app.py | cut -d"'" -f4)"
 echo -e "订阅路径: $(grep "SUB_PATH = " app.py | cut -d"'" -f4)"
+if [ -n "$KEEP_ALIVE_URL" ]; then
+    echo -e "保活URL: $KEEP_ALIVE_URL"
+fi
 echo -e "${YELLOW}========================${NC}"
 echo
 
@@ -319,6 +355,9 @@ echo
 # 修改Python文件添加YouTube分流到xray配置，并增加80端口节点
 echo -e "${BLUE}正在添加YouTube分流功能和80端口节点...${NC}"
 cat > youtube_patch.py << 'EOF'
+# coding: utf-8
+import os, base64, json, subprocess, time
+
 # 读取app.py文件
 with open('app.py', 'r', encoding='utf-8') as f:
     content = f.read()
@@ -438,7 +477,7 @@ new_config = '''config = {
                 {
                     "type": "field",
                     "domain": [
-                        "youtube.com",
+                        "youtube.com", "youtu.be",
                         "googlevideo.com",
                         "ytimg.com",
                         "gstatic.com",
@@ -487,7 +526,7 @@ trojan://{UUID}@{CFIP}:{CFPORT}?security=tls&sni={argo_domain}&fp=chrome&type=ws
     # Additional actions
     send_telegram()
     upload_nodes()
-  
+ 
     return sub_txt'''
 
 new_generate_function = '''# Generate links and subscription content
@@ -498,7 +537,7 @@ async def generate_links(argo_domain):
 
     time.sleep(2)
     
-    # TLS节点 (443端口)
+    # TLS节点
     VMESS_TLS = {"v": "2", "ps": f"{NAME}-{ISP}-TLS", "add": CFIP, "port": CFPORT, "id": UUID, "aid": "0", "scy": "none", "net": "ws", "type": "none", "host": argo_domain, "path": "/vmess-argo?ed=2560", "tls": "tls", "sni": argo_domain, "alpn": "", "fp": "chrome"}
     
     # 无TLS节点 (80端口)
@@ -532,7 +571,7 @@ trojan://{UUID}@{CFIP}:80?security=none&type=ws&host={argo_domain}&path=%2Ftroja
     # Additional actions
     send_telegram()
     upload_nodes()
-  
+ 
     return sub_txt'''
 
 # 替换generate_links函数
@@ -573,6 +612,25 @@ fi
 
 echo -e "${GREEN}服务已在后台启动，PID: $APP_PID${NC}"
 echo -e "${YELLOW}日志文件: $(pwd)/app.log${NC}"
+
+# 如果设置了保活URL，则启动保活任务
+KEEPALIVE_PID=""
+if [ -n "$KEEP_ALIVE_URL" ]; then
+    echo -e "${BLUE}正在启动自动保活任务...${NC}"
+    # 创建保活任务脚本
+    echo "#!/bin/bash" > keep_alive_task.sh
+    echo "while true; do" >> keep_alive_task.sh
+    echo "    curl -s -o /dev/null \"$KEEP_ALIVE_URL\"" >> keep_alive_task.sh
+    echo "    sleep 120" >> keep_alive_task.sh
+    echo "done" >> keep_alive_task.sh
+    chmod +x keep_alive_task.sh
+    
+    # 使用nohup后台运行保活任务
+    nohup ./keep_alive_task.sh >/dev/null 2>&1 &
+    KEEPALIVE_PID=$!
+    echo -e "${GREEN}自动保活任务已启动 (PID: $KEEPALIVE_PID)。${NC}"
+fi
+
 
 echo -e "${BLUE}等待服务启动...${NC}"
 sleep 8
@@ -648,13 +706,16 @@ fi
 
 echo
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}           部署完成！                   ${NC}"
+echo -e "${GREEN}                      部署完成！                      ${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo
 
 echo -e "${YELLOW}=== 服务信息 ===${NC}"
 echo -e "服务状态: ${GREEN}运行中${NC}"
-echo -e "进程PID: ${BLUE}$APP_PID${NC}"
+echo -e "主服务PID: ${BLUE}$APP_PID${NC}"
+if [ -n "$KEEPALIVE_PID" ]; then
+    echo -e "保活服务PID: ${BLUE}$KEEPALIVE_PID${NC}"
+fi
 echo -e "服务端口: ${BLUE}$SERVICE_PORT${NC}"
 echo -e "UUID: ${BLUE}$CURRENT_UUID${NC}"
 echo -e "订阅路径: ${BLUE}/$SUB_PATH_VALUE${NC}"
@@ -684,7 +745,7 @@ echo "$NODE_INFO"
 echo
 
 SAVE_INFO="========================================
-           节点信息保存               
+                      节点信息保存                      
 ========================================
 
 部署时间: $(date)
@@ -715,9 +776,16 @@ $NODE_INFO
 
 === 管理命令 ===
 查看日志: tail -f $(pwd)/app.log
-停止服务: kill $APP_PID
-重启服务: kill $APP_PID && nohup python3 app.py > app.log 2>&1 &
-查看进程: ps aux | grep python3
+停止主服务: kill $APP_PID
+重启主服务: kill $APP_PID && nohup python3 app.py > app.log 2>&1 &
+查看进程: ps aux | grep app.py"
+
+if [ -n "$KEEPALIVE_PID" ]; then
+    SAVE_INFO="${SAVE_INFO}
+停止保活服务: pkill -f keep_alive_task.sh && rm keep_alive_task.sh"
+fi
+
+SAVE_INFO="${SAVE_INFO}
 
 === 分流说明 ===
 - 已集成YouTube分流优化到xray配置
@@ -726,7 +794,7 @@ $NODE_INFO
 
 echo "$SAVE_INFO" > "$NODE_INFO_FILE"
 echo -e "${GREEN}节点信息已保存到 $NODE_INFO_FILE${NC}"
-echo -e "${YELLOW}使用脚本选择选项3可随时查看节点信息${NC}"
+echo -e "${YELLOW}使用脚本选择选项3或运行带-v参数可随时查看节点信息${NC}"
 
 echo -e "${YELLOW}=== 重要提示 ===${NC}"
 echo -e "${GREEN}部署已完成，节点信息已成功生成${NC}"
