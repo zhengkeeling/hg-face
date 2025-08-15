@@ -193,7 +193,7 @@ configure_hf_keep_alive() {
     read -p "> " SETUP_KEEP_ALIVE
     if [ "$SETUP_KEEP_ALIVE" = "y" ] || [ "$SETUP_KEEP_ALIVE" = "Y" ]; then
         echo -e "${YELLOW}请输入您的 Hugging Face 访问令牌 (Token):${NC}"
-        echo -e "${BLUE}（令牌用于API认证，输入时将不可见。请前往 https://huggingface.co/settings/tokens 获取）${NC}"
+        echo -e "${BLUE}（令牌用于API认证，输入时将不可见。请前往 https://huggingface.co/settings/tokens 获取 不会使用看视频教程https://youtu.be/ZRaUWQMjR_c）${NC}"
         read -sp "Token: " HF_TOKEN_INPUT
         echo
         if [ -z "$HF_TOKEN_INPUT" ]; then
