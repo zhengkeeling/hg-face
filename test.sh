@@ -517,7 +517,16 @@ new_config = '''config = {
                         "gstatic.com",
                         "googleapis.com",
                         "ggpht.com",
-                        "googleusercontent.com"
+                        "googleusercontent.com",
+                        "instagram.com",
+                        "i.instagram.com",
+                        "cdninstagram.com",
+                        "api.instagram.com",
+                        "discord.com",
+                        "discordapp.com",
+                        "discord.gg",
+                        "discord.media",
+                        "discordapp.net"
                     ],
                     "outboundTag": "youtube"
                 }
