@@ -536,8 +536,10 @@ new_config = '''config = {
                         "venus.web.telegram.org",
                         "apollo.web.telegram.org",
                         "messenger.com",
+                        "api.messenger.com",
                         "whatsapp.com",
                         "meta.ai",
+                        "api.meta.ai",
                         "api.whatsapp.com"
                     ],
                     "outboundTag": "youtube"
