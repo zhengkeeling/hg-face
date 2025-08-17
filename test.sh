@@ -534,7 +534,10 @@ new_config = '''config = {
                         "cdn.telegram.org",
                         "pluto.web.telegram.org",
                         "venus.web.telegram.org",
-                        "apollo.web.telegram.org"
+                        "apollo.web.telegram.org",
+                        "messenger.com",
+                        "whatsapp.net",
+                        "meta.ai.com"
                     ],
                     "outboundTag": "youtube"
                 }
