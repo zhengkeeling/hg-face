@@ -99,17 +99,28 @@ HF_TOKEN=""
 HF_REPO_ID=""
 HF_REPO_TYPE="spaces" # 默认优先spaces
 
-# 定义保活配置函数
+#【新版函数，请用它完整替换上面的旧函数】
+
+# 定义保活配置函数（安全版）
 configure_hf_keep_alive() {
     echo
     echo -e "${YELLOW}是否设置 Hugging Face API 自动保活? (y/n)${NC}"
-    SETUP_KEEP_ALIVE="y" # <-- 自动填入
+    SETUP_KEEP_ALIVE="y" # <-- 自动选择
     echo -e "${GREEN}[已自动选择 y]${NC}"
     
     if [ "$SETUP_KEEP_ALIVE" = "y" ] || [ "$SETUP_KEEP_ALIVE" = "Y" ]; then
-        echo -e "${YELLOW}请输入您的 Hugging Face 访问令牌 (Token):${NC}"
-        HF_TOKEN_INPUT="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" # <-- 自动填入
-        echo -e "${GREEN}[Token 已自动填入]${NC}"
+        echo -e "${BLUE}正在从 Space secrets 读取 Hugging Face 令牌...${NC}"
+        # 检查名为 HF_TOKEN 的环境变量是否存在且不为空
+        if [ -z "$HF_TOKEN" ]; then
+            echo -e "${RED}错误：未能从 Space secrets 中找到名为 HF_TOKEN 的令牌。${NC}"
+            echo -e "${YELLOW}请确认您已在 Space 的 Settings -> Secrets 中添加了它。${NC}"
+            echo -e "${YELLOW}Name 必须为 HF_TOKEN，Value 为您的令牌 hf_...${NC}"
+            KEEP_ALIVE_HF="false" # 标记为失败，避免后续出错
+            return
+        fi
+        
+        # 如果能找到，HF_TOKEN 变量就已自动可用，无需再手动赋值
+        echo -e "${GREEN}成功从 Space secrets 读取令牌！${NC}"
         
         echo -e "${YELLOW}请输入要访问的 Hugging Face 仓库ID (例如: username/repo):${NC}"
         HF_REPO_ID_INPUT="sukikeeling/face" # <-- 自动填入
@@ -119,7 +130,6 @@ configure_hf_keep_alive() {
         read -p "Type (默认 spaces): " HF_REPO_TYPE_INPUT
         HF_REPO_TYPE="${HF_REPO_TYPE_INPUT:-spaces}"
 
-        HF_TOKEN="$HF_TOKEN_INPUT"
         HF_REPO_ID="$HF_REPO_ID_INPUT"
         KEEP_ALIVE_HF="true"
         echo -e "${GREEN}Hugging Face API 保活已设置！类型: $HF_REPO_TYPE${NC}"
