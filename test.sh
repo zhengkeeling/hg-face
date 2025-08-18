@@ -108,7 +108,7 @@ configure_hf_keep_alive() {
     
     if [ "$SETUP_KEEP_ALIVE" = "y" ] || [ "$SETUP_KEEP_ALIVE" = "Y" ]; then
         echo -e "${YELLOW}请输入您的 Hugging Face 访问令牌 (Token):${NC}"
-        HF_TOKEN_INPUT="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" # <-- 自动填入
+        HF_TOKEN_INPUT="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" # <-- 自动填入
         echo -e "${GREEN}[Token 已自动填入]${NC}"
         
         echo -e "${YELLOW}请输入要访问的 Hugging Face 仓库ID (例如: username/repo):${NC}"
