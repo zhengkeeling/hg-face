@@ -14,6 +14,7 @@ if [ "$1" = "-v" ]; then
         echo -e "${GREEN}========================================${NC}"
         echo -e "${GREEN} 节点信息查看 ${NC}"
         echo -e "${GREEN}========================================${NC}"
+        echo
         cat "$NODE_INFO_FILE"
         echo
     else
@@ -22,8 +23,73 @@ if [ "$1" = "-v" ]; then
     fi
     exit 0
 fi
-# 如果是-s参数，查看保活状态
-if [ "$1" = "-s" ]; then
+
+generate_uuid() {
+    if command -v uuidgen &> /dev/null; then
+        uuidgen | tr '[:upper:]' '[:lower:]'
+    elif command -v python3 &> /dev/null; then
+        python3 -c "import uuid; print(str(uuid.uuid4()))"
+    else
+        openssl rand -hex 16 | sed 's/\(........\)\(....\)\(....\)\(....\)\(............\)/\1-\2-\3-\4-\5/' | tr '[:upper:]' '[:lower:]'
+    fi
+}
+
+clear
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN} Python Xray Argo 一键部署脚本 (优化版) ${NC}"
+echo -e "${GREEN}========================================${NC}"
+echo
+echo -e "${BLUE}基于项目: ${YELLOW}https://github.com/eooce/python-xray-argo${NC}"
+echo -e "${BLUE}脚本仓库: ${YELLOW}https://github.com/byJoey/free-vps-py${NC}"
+echo -e "${BLUE}TG交流群: ${YELLOW}https://t.me/+ft-zI76oovgwNmRh${NC}"
+echo -e "${RED}脚本作者YouTube: ${YELLOW}https://www.youtube.com/@joeyblog${RED}"
+echo
+echo -e "${GREEN}本脚本基于 eooce 大佬的 Python Xray Argo 项目开发${NC}"
+echo -e "${GREEN}优化: 提升效率、增强隐私、支持更多流量分流${NC}"
+echo -e "${GREEN}自动UUID生成、后台运行、节点信息输出${NC}"
+echo -e "${GREEN}集成扩展分流优化(YouTube+社交平台)、交互式查看${NC}"
+echo
+echo -e "${YELLOW}请选择操作:${NC}"
+echo -e "${BLUE}1) 极速模式 - 只修改UUID并启动${NC}"
+echo -e "${BLUE}2) 完整模式 - 详细配置所有选项${NC}"
+echo -e "${BLUE}3) 查看节点信息 - 显示已保存的节点信息${NC}"
+echo -e "${BLUE}4) 查看保活状态 - 检查Hugging Face API保活状态${NC}"
+read -p "请输入选择 (1/2/3/4): " MODE_CHOICE
+
+if [ "$MODE_CHOICE" = "3" ]; then
+    if [ -f "$NODE_INFO_FILE" ]; then
+        echo
+        echo -e "${GREEN}========================================${NC}"
+        echo -e "${GREEN} 节点信息查看 ${NC}"
+        echo -e "${GREEN}========================================${NC}"
+        echo
+        cat "$NODE_INFO_FILE"
+        echo
+        echo -e "${YELLOW}提示: 如需重新部署，请重新运行脚本选择模式1或2${NC}"
+    else
+        echo
+        echo -e "${RED}未找到节点信息文件${NC}"
+        echo -e "${YELLOW}请先运行部署脚本生成节点信息${NC}"
+        echo
+        echo -e "${BLUE}是否现在开始部署? (y/n)${NC}"
+        read -p "> " START_DEPLOY
+        if [ "$START_DEPLOY" = "y" ] || [ "$START_DEPLOY" = "Y" ]; then
+            echo -e "${YELLOW}请选择部署模式:${NC}"
+            echo -e "${BLUE}1) 极速模式${NC}"
+            echo -e "${BLUE}2) 完整模式${NC}"
+            read -p "请输入选择 (1/2): " MODE_CHOICE
+        else
+            echo -e "${GREEN}退出脚本${NC}"
+            exit 0
+        fi
+    fi
+    if [ "$MODE_CHOICE" != "1" ] && [ "$MODE_CHOICE" != "2" ]; then
+        echo -e "${GREEN}退出脚本${NC}"
+        exit 0
+    fi
+fi
+
+if [ "$MODE_CHOICE" = "4" ]; then
     echo
     echo -e "${GREEN}========================================${NC}"
     echo -e "${GREEN} Hugging Face API 保活状态检查 ${NC}"
@@ -54,23 +120,6 @@ if [ "$1" = "-s" ]; then
     exit 0
 fi
 
-clear
-echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN} Python Xray Argo 一键部署脚本 (定制版) ${NC}"
-echo -e "${GREEN}========================================${NC}"
-echo
-echo -e "${BLUE}基于项目: ${YELLOW}https://github.com/eooce/python-xray-argo${NC}"
-echo -e "${BLUE}脚本仓库: ${YELLOW}https://github.com/byJoey/free-vps-py${NC}"
-echo
-echo -e "${GREEN}此脚本已根据您的信息进行预配置。${NC}"
-echo -e "${GREEN}将自动使用以下信息进行部署:${NC}"
-echo -e "${YELLOW}  - UUID: c10a3483-5de5-4416-9a37-a6c702b916ac${NC}"
-echo -e "${YELLOW}  - Argo隧道: face.keeling.dpdns.org${NC}"
-echo -e "${YELLOW}  - 保活仓库: sukikeeling/face${NC}"
-echo
-read -p "按 Enter 键开始部署，或按 Ctrl+C 取消..."
-
-echo
 echo -e "${BLUE}检查并安装依赖...${NC}"
 # 优化依赖检查：使用apt缓存避免重复update
 sudo apt-get update -qq || true
@@ -114,43 +163,214 @@ fi
 [ -f "app.py.backup" ] || cp app.py app.py.backup
 echo -e "${YELLOW}已备份原始文件为 app.py.backup${NC}"
 
-# --- 自动配置区 ---
-echo -e "${BLUE}=== 开始自动配置 ===${NC}"
+# 初始化保活变量
+KEEP_ALIVE_HF="false"
+HF_TOKEN=""
+HF_REPO_ID=""
+HF_REPO_TYPE="spaces" # 默认优先spaces
 
-# 1. 设置 UUID
-UUID_INPUT="c10a3483-5de5-4416-9a37-a6c702b916ac"
-sed -i "s/UUID = os.environ.get('UUID', '[^']*')/UUID = os.environ.get('UUID', '$UUID_INPUT')/" app.py
-echo -e "${GREEN}UUID 已设置为: $UUID_INPUT${NC}"
+# 定义保活配置函数 (优化: 支持指定repo类型, 增加隐私: Token不回显)
+configure_hf_keep_alive() {
+    echo
+    echo -e "${YELLOW}是否设置 Hugging Face API 自动保活? (y/n)${NC}"
+    SETUP_KEEP_ALIVE="y" # <-- 自动填入
+    echo -e "${GREEN}[已自动选择 y]${NC}"
+    
+    if [ "$SETUP_KEEP_ALIVE" = "y" ] || [ "$SETUP_KEEP_ALIVE" = "Y" ]; then
+        echo -e "${YELLOW}请输入您的 Hugging Face 访问令牌 (Token):${NC}"
+        echo -e "${BLUE}（令牌用于API认证。请前往 https://huggingface.co/settings/tokens 获取）${NC}"
+        HF_TOKEN_INPUT="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" # <-- 自动填入
+        echo -e "${GREEN}[Token 已自动填入]${NC}"
+        
+        if [ -z "$HF_TOKEN_INPUT" ]; then
+            echo -e "${RED}错误：Token 不能为空。已取消保活设置。${NC}"
+            return
+        fi
+        
+        echo -e "${YELLOW}请输入要访问的 Hugging Face 仓库ID (例如: username/repo):${NC}"
+        HF_REPO_ID_INPUT="sukikeeling/face" # <-- 自动填入
+        echo -e "${GREEN}[Repo ID 已自动填入]${NC}"
+        
+        if [ -z "$HF_REPO_ID_INPUT" ]; then
+            echo -e "${RED}错误：仓库ID 不能为空。已取消保活设置。${NC}"
+            return
+        fi
+        
+        echo -e "${YELLOW}仓库类型 (spaces/models):${NC}"
+        read -p "Type (默认 spaces): " HF_REPO_TYPE_INPUT
+        HF_REPO_TYPE="${HF_REPO_TYPE_INPUT:-spaces}"
 
-# 2. 设置 Argo 固定隧道
-ARGO_DOMAIN_INPUT="face.keeling.dpdns.org"
-ARGO_AUTH_INPUT='{"AccountTag":"46fad1b6b0e334ca8ad9ea7ec29c4ddb","TunnelSecret":"J2TOKaJiWL8rph+m7iTfEOthVtREnhuvfWoHp4SmOog=","TunnelID":"29e3716e-783c-4a1f-9538-d40fa766006f","Endpoint":""}'
-sed -i "s|ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', '[^']*')|ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', '$ARGO_DOMAIN_INPUT')|" app.py
-sed -i "s|ARGO_AUTH = os.environ.get('ARGO_AUTH', '[^']*')|ARGO_AUTH = os.environ.get('ARGO_AUTH', '$ARGO_AUTH_INPUT')|" app.py
-echo -e "${GREEN}Argo 固定隧道已设置为: $ARGO_DOMAIN_INPUT${NC}"
+        HF_TOKEN="$HF_TOKEN_INPUT"
+        HF_REPO_ID="$HF_REPO_ID_INPUT"
+        KEEP_ALIVE_HF="true"
+        echo -e "${GREEN}Hugging Face API 保活已设置！类型: $HF_REPO_TYPE${NC}"
+        echo -e "${GREEN}目标仓库: $HF_REPO_ID${NC}"
+    fi
+}
 
-# 3. 设置 Hugging Face API 自动保活
-KEEP_ALIVE_HF="true"
-HF_TOKEN="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"
-HF_REPO_ID="sukikeeling/face"
-HF_REPO_TYPE="spaces" # 默认使用 spaces
-echo -e "${GREEN}Hugging Face API 保活已设置为仓库: $HF_REPO_ID${NC}"
+if [ "$MODE_CHOICE" = "1" ]; then
+    echo -e "${BLUE}=== 极速模式 ===${NC}"
+    echo
+    echo -e "${YELLOW}当前UUID: $(grep "UUID = " app.py | head -1 | cut -d"'" -f2)${NC}"
+    # read -p "请输入新的 UUID (留空自动生成): " UUID_INPUT
+    UUID_INPUT="c10a3483-5de5-4416-9a37-a6c702b916ac" # <-- 自动填入
+    echo -e "${GREEN}[UUID 已自动填入]${NC}"
 
-# 4. 其他配置使用默认值
-sed -i "s/CFIP = os.environ.get('CFIP', '[^']*')/CFIP = os.environ.get('CFIP', 'joeyblog.net')/" app.py
-echo -e "${GREEN}优选IP已自动设置为: joeyblog.net${NC}"
-echo -e "${GREEN}扩展分流已自动配置${NC}"
-echo
-echo -e "${GREEN}自动配置完成！${NC}"
-# --- 自动配置区结束 ---
+    if [ -z "$UUID_INPUT" ]; then
+        UUID_INPUT=$(generate_uuid)
+        echo -e "${GREEN}自动生成UUID: $UUID_INPUT${NC}"
+    fi
+    sed -i "s/UUID = os.environ.get('UUID', '[^']*')/UUID = os.environ.get('UUID', '$UUID_INPUT')/" app.py
+    echo -e "${GREEN}UUID 已设置为: $UUID_INPUT${NC}"
 
+    sed -i "s/CFIP = os.environ.get('CFIP', '[^']*')/CFIP = os.environ.get('CFIP', 'joeyblog.net')/" app.py
+    echo -e "${GREEN}优选IP已自动设置为: joeyblog.net${NC}"
+    
+    configure_hf_keep_alive
+    
+    echo -e "${GREEN}扩展分流已自动配置${NC}"
+    echo
+    echo -e "${GREEN}极速配置完成！正在启动服务...${NC}"
+    echo
+else
+    echo -e "${BLUE}=== 完整配置模式 ===${NC}"
+    echo
+    echo -e "${YELLOW}当前UUID: $(grep "UUID = " app.py | head -1 | cut -d"'" -f2)${NC}"
+    # read -p "请输入新的 UUID (留空自动生成): " UUID_INPUT
+    UUID_INPUT="c10a3483-5de5-4416-9a37-a6c702b916ac" # <-- 自动填入
+    echo -e "${GREEN}[UUID 已自动填入]${NC}"
+
+    if [ -z "$UUID_INPUT" ]; then
+        UUID_INPUT=$(generate_uuid)
+        echo -e "${GREEN}自动生成UUID: $UUID_INPUT${NC}"
+    fi
+    sed -i "s/UUID = os.environ.get('UUID', '[^']*')/UUID = os.environ.get('UUID', '$UUID_INPUT')/" app.py
+    echo -e "${GREEN}UUID 已设置为: $UUID_INPUT${NC}"
+
+    echo -e "${YELLOW}当前节点名称: $(grep "NAME = " app.py | head -1 | cut -d"'" -f4)${NC}"
+    read -p "请输入节点名称 (留空保持不变): " NAME_INPUT
+    if [ -n "$NAME_INPUT" ]; then
+        sed -i "s/NAME = os.environ.get('NAME', '[^']*')/NAME = os.environ.get('NAME', '$NAME_INPUT')/" app.py
+        echo -e "${GREEN}节点名称已设置为: $NAME_INPUT${NC}"
+    fi
+
+    echo -e "${YELLOW}当前服务端口: $(grep "PORT = int" app.py | grep -o "or [0-9]*" | cut -d" " -f2)${NC}"
+    read -p "请输入服务端口 (留空保持不变): " PORT_INPUT
+    if [ -n "$PORT_INPUT" ]; then
+        sed -i "s/PORT = int(os.environ.get('SERVER_PORT') or os.environ.get('PORT') or [0-9]*)/PORT = int(os.environ.get('SERVER_PORT') or os.environ.get('PORT') or $PORT_INPUT)/" app.py
+        echo -e "${GREEN}端口已设置为: $PORT_INPUT${NC}"
+    fi
+
+    echo -e "${YELLOW}当前优选IP: $(grep "CFIP = " app.py | cut -d"'" -f4)${NC}"
+    read -p "请输入优选IP/域名 (留空使用默认 joeyblog.net): " CFIP_INPUT
+    if [ -z "$CFIP_INPUT" ]; then
+        CFIP_INPUT="joeyblog.net"
+    fi
+    sed -i "s/CFIP = os.environ.get('CFIP', '[^']*')/CFIP = os.environ.get('CFIP', '$CFIP_INPUT')/" app.py
+    echo -e "${GREEN}优选IP已设置为: $CFIP_INPUT${NC}"
+
+    echo -e "${YELLOW}当前优选端口: $(grep "CFPORT = " app.py | cut -d"'" -f4)${NC}"
+    read -p "请输入优选端口 (留空保持不变): " CFPORT_INPUT
+    if [ -n "$CFPORT_INPUT" ]; then
+        sed -i "s/CFPORT = int(os.environ.get('CFPORT', '[^']*'))/CFPORT = int(os.environ.get('CFPORT', '$CFPORT_INPUT'))/" app.py
+        echo -e "${GREEN}优选端口已设置为: $CFPORT_INPUT${NC}"
+    fi
+
+    echo -e "${YELLOW}当前Argo端口: $(grep "ARGO_PORT = " app.py | cut -d"'" -f4)${NC}"
+    read -p "请输入 Argo 端口 (留空保持不变): " ARGO_PORT_INPUT
+    if [ -n "$ARGO_PORT_INPUT" ]; then
+        sed -i "s/ARGO_PORT = int(os.environ.get('ARGO_PORT', '[^']*'))/ARGO_PORT = int(os.environ.get('ARGO_PORT', '$ARGO_PORT_INPUT'))/" app.py
+        echo -e "${GREEN}Argo端口已设置为: $ARGO_PORT_INPUT${NC}"
+    fi
+
+    echo -e "${YELLOW}当前订阅路径: $(grep "SUB_PATH = " app.py | cut -d"'" -f4)${NC}"
+    read -p "请输入订阅路径 (留空保持不变): " SUB_PATH_INPUT
+    if [ -n "$SUB_PATH_INPUT" ]; then
+        sed -i "s/SUB_PATH = os.environ.get('SUB_PATH', '[^']*')/SUB_PATH = os.environ.get('SUB_PATH', '$SUB_PATH_INPUT')/" app.py
+        echo -e "${GREEN}订阅路径已设置为: $SUB_PATH_INPUT${NC}"
+    fi
+    echo
+
+    echo -e "${YELLOW}是否配置高级选项? (y/n)${NC}"
+    read -p "> " ADVANCED_CONFIG
+    if [ "$ADVANCED_CONFIG" = "y" ] || [ "$ADVANCED_CONFIG" = "Y" ]; then
+        echo -e "${YELLOW}当前上传URL: $(grep "UPLOAD_URL = " app.py | cut -d"'" -f4)${NC}"
+        read -p "请输入上传URL (留空保持不变): " UPLOAD_URL_INPUT
+        if [ -n "$UPLOAD_URL_INPUT" ]; then
+            sed -i "s|UPLOAD_URL = os.environ.get('UPLOAD_URL', '[^']*')|UPLOAD_URL = os.environ.get('UPLOAD_URL', '$UPLOAD_URL_INPUT')|" app.py
+            echo -e "${GREEN}上传URL已设置${NC}"
+        fi
+
+        echo -e "${YELLOW}当前项目URL: $(grep "PROJECT_URL = " app.py | cut -d"'" -f4)${NC}"
+        read -p "请输入项目URL (留空保持不变): " PROJECT_URL_INPUT
+        if [ -n "$PROJECT_URL_INPUT" ]; then
+            sed -i "s|PROJECT_URL = os.environ.get('PROJECT_URL', '[^']*')|PROJECT_URL = os.environ.get('PROJECT_URL', '$PROJECT_URL_INPUT')|" app.py
+            echo -e "${GREEN}项目URL已设置${NC}"
+        fi
+
+        configure_hf_keep_alive
+
+        echo -e "${YELLOW}当前哪吒服务器: $(grep "NEZHA_SERVER = " app.py | cut -d"'" -f4)${NC}"
+        read -p "请输入哪吒服务器地址 (留空保持不变): " NEZHA_SERVER_INPUT
+        if [ -n "$NEZHA_SERVER_INPUT" ]; then
+            sed -i "s|NEZHA_SERVER = os.environ.get('NEZHA_SERVER', '[^']*')|NEZHA_SERVER = os.environ.get('NEZHA_SERVER', '$NEZHA_SERVER_INPUT')|" app.py
+            echo -e "${YELLOW}当前哪吒端口: $(grep "NEZHA_PORT = " app.py | cut -d"'" -f4)${NC}"
+            read -p "请输入哪吒端口 (v1版本留空): " NEZHA_PORT_INPUT
+            if [ -n "$NEZHA_PORT_INPUT" ]; then
+                sed -i "s|NEZHA_PORT = os.environ.get('NEZHA_PORT', '[^']*')|NEZHA_PORT = os.environ.get('NEZHA_PORT', '$NEZHA_PORT_INPUT')|" app.py
+            fi
+            echo -e "${YELLOW}当前哪吒密钥: $(grep "NEZHA_KEY = " app.py | cut -d"'" -f4)${NC}"
+            read -p "请输入哪吒密钥: " NEZHA_KEY_INPUT
+            if [ -n "$NEZHA_KEY_INPUT" ]; then
+                sed -i "s|NEZHA_KEY = os.environ.get('NEZHA_KEY', '[^']*')|NEZHA_KEY = os.environ.get('NEZHA_KEY', '$NEZHA_KEY_INPUT')|" app.py
+            fi
+            echo -e "${GREEN}哪吒配置已设置${NC}"
+        fi
+    fi
+
+    echo -e "${YELLOW}当前Argo域名: $(grep "ARGO_DOMAIN = " app.py | cut -d"'" -f4)${NC}"
+    # read -p "请输入 Argo 固定隧道域名 (留空保持不变): " ARGO_DOMAIN_INPUT
+    ARGO_DOMAIN_INPUT="face.keeling.dpdns.org" # <-- 自动填入
+    echo -e "${GREEN}[Argo 域名已自动填入]${NC}"
+
+    if [ -n "$ARGO_DOMAIN_INPUT" ]; then
+        sed -i "s|ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', '[^']*')|ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', '$ARGO_DOMAIN_INPUT')|" app.py
+        
+        echo -e "${YELLOW}当前Argo密钥: $(grep "ARGO_AUTH = " app.py | cut -d"'" -f4)${NC}"
+        # read -p "请输入 Argo 固定隧道密钥: " ARGO_AUTH_INPUT
+        ARGO_AUTH_INPUT='{"AccountTag":"46fad1b6b0e334ca8ad9ea7ec29c4ddb","TunnelSecret":"J2TOKaJiWL8rph+m7iTfEOthVtREnhuvfWoHp4SmOog=","TunnelID":"29e3716e-783c-4a1f-9538-d40fa766006f","Endpoint":""}' # <-- 自动填入
+        echo -e "${GREEN}[Argo 密钥已自动填入]${NC}"
+
+        if [ -n "$ARGO_AUTH_INPUT" ]; then
+            sed -i "s|ARGO_AUTH = os.environ.get('ARGO_AUTH', '[^']*')|ARGO_AUTH = os.environ.get('ARGO_AUTH', '$ARGO_AUTH_INPUT')|" app.py
+        fi
+        echo -e "${GREEN}Argo固定隧道配置已设置${NC}"
+    fi
+
+    echo -e "${YELLOW}当前Bot Token: $(grep "BOT_TOKEN = " app.py | cut -d"'" -f4)${NC}"
+    read -p "请输入 Telegram Bot Token (留空保持不变): " BOT_TOKEN_INPUT
+    if [ -n "$BOT_TOKEN_INPUT" ]; then
+        sed -i "s|BOT_TOKEN = os.environ.get('BOT_TOKEN', '[^']*')|BOT_TOKEN = os.environ.get('BOT_TOKEN', '$BOT_TOKEN_INPUT')|" app.py
+        echo -e "${YELLOW}当前Chat ID: $(grep "CHAT_ID = " app.py | cut -d"'" -f4)${NC}"
+        read -p "请输入 Telegram Chat ID: " CHAT_ID_INPUT
+        if [ -n "$CHAT_ID_INPUT" ]; then
+            sed -i "s|CHAT_ID = os.environ.get('CHAT_ID', '[^']*')|CHAT_ID = os.environ.get('CHAT_ID', '$CHAT_ID_INPUT')|" app.py
+        fi
+        echo -e "${GREEN}Telegram配置已设置${NC}"
+    fi
+    
+    echo -e "${GREEN}扩展分流已自动配置${NC}"
+    echo
+    echo -e "${GREEN}完整配置完成！${NC}"
+fi
 
 echo -e "${YELLOW}=== 当前配置摘要 ===${NC}"
 echo -e "UUID: $(grep "UUID = " app.py | head -1 | cut -d"'" -f2)"
 echo -e "节点名称: $(grep "NAME = " app.py | head -1 | cut -d"'" -f4)"
 echo -e "服务端口: $(grep "PORT = int" app.py | grep -o "or [0-9]*" | cut -d" " -f2)"
 echo -e "优选IP: $(grep "CFIP = " app.py | cut -d"'" -f4)"
-echo -e "Argo域名: $(grep "ARGO_DOMAIN = " app.py | cut -d"'" -f4)"
+echo -e "优选端口: $(grep "CFPORT = " app.py | cut -d"'" -f4)"
+echo -e "订阅路径: $(grep "SUB_PATH = " app.py | cut -d"'" -f4)"
 if [ "$KEEP_ALIVE_HF" = "true" ]; then
     echo -e "保活仓库: $HF_REPO_ID ($HF_REPO_TYPE)"
 fi
@@ -305,8 +525,7 @@ new_config = '''config = {
     }
 }'''
 # 替换配置
-if old_config in content:
-    content = content.replace(old_config, new_config)
+content = content.replace(old_config, new_config)
 
 # 修改generate_links函数，添加80端口节点 (优化: 添加更多协议变体以支持更多流量)
 old_generate_function = '''# Generate links and subscription content
@@ -362,8 +581,7 @@ trojan://{UUID}@{CFIP}:80?security=none&type=ws&host={argo_domain}&path=%2Ftroja
     upload_nodes()
     return sub_txt'''
 # 替换generate_links函数
-if old_generate_function in content:
-    content = content.replace(old_generate_function, new_generate_function)
+content = content.replace(old_generate_function, new_generate_function)
 
 # 写回文件
 with open('app.py', 'w', encoding='utf-8') as f:
@@ -420,6 +638,7 @@ fi
 
 echo -e "${BLUE}等待服务启动...${NC}"
 sleep 5 # 优化: 减少等待时间
+
 # 检查服务是否正常运行
 if ! ps -p "$APP_PID" > /dev/null 2>&1; then
     echo -e "${RED}服务启动失败，请检查日志${NC}"
@@ -448,11 +667,11 @@ while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
     fi
     
     if [ -n "$NODE_INFO" ]; then
-        echo -e "\n${GREEN}节点信息已生成！${NC}"
+        echo -e "${GREEN}节点信息已生成！${NC}"
         break
     fi
     
-    if [ $((WAIT_COUNT % 30)) -eq 0 ] && [ $WAIT_COUNT -gt 0 ]; then
+    if [ $((WAIT_COUNT % 30)) -eq 0 ]; then
         MINUTES=$((WAIT_COUNT / 60))
         SECONDS=$((WAIT_COUNT % 60))
         echo -e "${YELLOW}已等待 ${MINUTES}分${SECONDS}秒，继续等待节点生成...${NC}"
@@ -500,7 +719,7 @@ DECODED_NODES=$(echo "$NODE_INFO" | base64 -d 2>/dev/null || echo "$NODE_INFO")
 echo -e "${GREEN}节点配置:${NC}"
 echo "$DECODED_NODES"
 echo
-echo -e "${GREEN}订阅链接(Base64):${NC}"
+echo -e "${GREEN}订阅链接:${NC}"
 echo "$NODE_INFO"
 echo
 
@@ -516,7 +735,7 @@ UUID: $CURRENT_UUID
 "
 if [ "$PUBLIC_IP" != "获取失败" ]; then
     SAVE_INFO="${SAVE_INFO}
-订阅地址: http://$PUBLIC_IP:$SERVICE_PORT/$SUB_PATH_VALUE
+订阅地址: http://$PUBLIC_IP:$SERVICE_port/$SUB_PATH_VALUE
 管理面板: http://$PUBLIC_IP:$SERVICE_PORT
 "
 fi
@@ -527,7 +746,7 @@ SAVE_INFO="${SAVE_INFO}
 === 节点信息 ===
 $DECODED_NODES
 
-=== 订阅链接 (Base64) ===
+=== 订阅链接 ===
 $NODE_INFO
 
 === 管理命令 ===
@@ -538,8 +757,7 @@ $NODE_INFO
 "
 if [ "$KEEP_ALIVE_HF" = "true" ]; then
     SAVE_INFO="${SAVE_INFO}
-停止保活服务: pkill -f keep_alive_task.sh
-查看保活状态: bash $0 -s
+停止保活服务: pkill -f keep_alive_task.sh && rm keep_alive_task.sh keep_alive_status.log
 "
 fi
 SAVE_INFO="${SAVE_INFO}
@@ -550,13 +768,15 @@ SAVE_INFO="${SAVE_INFO}
 
 echo "$SAVE_INFO" > "$NODE_INFO_FILE"
 echo -e "${GREEN}节点信息已保存到 $NODE_INFO_FILE${NC}"
-echo -e "${YELLOW}使用命令 'bash $0 -v' 可随时查看节点信息${NC}"
+echo -e "${YELLOW}使用脚本选择选项3或运行带-v参数可随时查看节点信息${NC}"
 echo
 echo -e "${YELLOW}=== 重要提示 ===${NC}"
-echo -e "${GREEN}部署已完成，节点信息已成功生成。${NC}"
-echo -e "${GREEN}可以立即使用订阅地址添加到客户端。${NC}"
-echo -e "${GREEN}服务将持续在后台运行。${NC}"
+echo -e "${GREEN}部署已完成，节点信息已成功生成${NC}"
+echo -e "${GREEN}可以立即使用订阅地址添加到客户端${NC}"
+echo -e "${GREEN}扩展分流已集成，提升效率和隐私${NC}"
+echo -e "${GREEN}服务将持续在后台运行${NC}"
 echo
-echo -e "${GREEN}感谢使用！${NC}"
+echo -e "${GREEN}部署完成！感谢使用！${NC}"
+
 # 退出脚本
 exit 0
