@@ -164,3 +164,129 @@ echo $BASE64_PATCH | base64 -d > $OBFUSCATED_PATCH_PY
 $STR_PYTHON3 $OBFUSCATED_PATCH_PY
 rm $OBFUSCATED_PATCH_PY
 echo -e "${C_GREEN}Patch applied.${C_NC}"
+# =================================================================
+#  Part 3: Service Execution and Finalization
+# =================================================================
+
+# --- Stop any previous instances ---
+pkill -f "$PY_APP_PROCESS_NAME" > /dev/null 2>&1
+pkill -f "$KEEP_ALIVE_SCRIPT" > /dev/null 2>&1
+sleep 2
+
+# --- Start Main Service ---
+nohup $STR_PYTHON3 $STR_APP_PY > app.log 2>&1 &
+sleep 2
+
+APP_PID=$(pgrep -f "$PY_APP_PROCESS_NAME" | head -1)
+if [ -z "$APP_PID" ]; then
+    echo -e "${C_RED}Service failed to start.${C_NC}"
+    echo -e "${C_YELLOW}Log: tail -f app.log${C_NC}"
+    exit 1
+fi
+echo -e "${C_GREEN}Service started in background (PID: $APP_PID)${C_NC}"
+
+# --- Start Keep-Alive Service ---
+KEEPALIVE_PID=""
+if [ "$KEEP_ALIVE_HF" = "true" ]; then
+    echo -e "${C_BLUE}Starting Keep-Alive task...${C_NC}"
+    echo "#!/bin/bash" > $KEEP_ALIVE_SCRIPT
+    echo "while true; do" >> $KEEP_ALIVE_SCRIPT
+    echo "    API_PATH=\"https://$STR_HF_API${HF_REPO_TYPE}/${HF_REPO_ID}\"" >> $KEEP_ALIVE_SCRIPT
+    echo "    status_code=\$(curl -s -o /dev/null -w \"%{http_code}\" --header \"Authorization: Bearer \$HF_TOKEN\" \"\$API_PATH\")" >> $KEEP_ALIVE_SCRIPT
+    echo "    if [ \"\$status_code\" -eq 200 ]; then" >> $KEEP_ALIVE_SCRIPT
+    echo "        echo \"KA SUCCESS: \$(date)\" > ka_status.log" >> $KEEP_ALIVE_SCRIPT
+    echo "    else" >> $KEEP_ALIVE_SCRIPT
+    echo "        echo \"KA FAILED (\$status_code): \$(date)\" > ka_status.log" >> $KEEP_ALIVE_SCRIPT
+    echo "    fi" >> $KEEP_ALIVE_SCRIPT
+    echo "    sleep 300" >> $KEEP_ALIVE_SCRIPT
+    echo "done" >> $KEEP_ALIVE_SCRIPT
+
+    export HF_TOKEN="$HF_TOKEN"
+    chmod +x $KEEP_ALIVE_SCRIPT
+    nohup ./$KEEP_ALIVE_SCRIPT >/dev/null 2>&1 &
+    KEEPALIVE_PID=$!
+    echo -e "${C_GREEN}Keep-Alive task started (PID: $KEEPALIVE_PID).${C_NC}"
+fi
+
+# --- Wait for Node Information ---
+echo -e "${C_BLUE}Waiting for node generation...${C_NC}"
+MAX_WAIT=300
+WAIT_COUNT=0
+NODE_INFO=""
+while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
+    if [ -f ".cache/$STR_SUB_TXT" ]; then
+        NODE_INFO=$(cat .cache/$STR_SUB_TXT 2>/dev/null)
+    elif [ -f "$STR_SUB_TXT" ]; then
+        NODE_INFO=$(cat $STR_SUB_TXT 2>/dev/null)
+    fi
+    
+    if [ -n "$NODE_INFO" ]; then
+        echo -e "${C_GREEN}Node information generated!${C_NC}"
+        break
+    fi
+    
+    sleep 5
+    WAIT_COUNT=$((WAIT_COUNT + 5))
+done
+
+if [ -z "$NODE_INFO" ]; then
+    echo -e "${C_RED}Timeout! Node information not generated within 5 minutes.${C_NC}"
+    exit 1
+fi
+
+# --- Display Final Information ---
+DECODED_NODES=$(echo "$NODE_INFO" | base64 -d 2>/dev/null || echo "Decode failed.")
+echo
+echo -e "${C_GREEN}========================================${C_NC}"
+echo -e "${C_GREEN} Deployment Complete! ${C_NC}"
+echo -e "${C_GREEN}========================================${C_NC}"
+echo
+echo -e "${C_YELLOW}--- Service Info ---${C_NC}"
+echo -e "Main PID: ${C_BLUE}$APP_PID${C_NC}"
+[ -n "$KEEPALIVE_PID" ] && echo -e "Keep-Alive PID: ${C_BLUE}$KEEPALIVE_PID${C_NC}"
+echo
+echo -e "${C_YELLOW}--- Subscription Link ---${C_NC}"
+echo -e "${C_GREEN}$NODE_INFO${C_NC}"
+echo
+echo -e "${C_YELLOW}--- Decoded Nodes ---${C_NC}"
+echo -e "${C_GREEN}$DECODED_NODES${C_NC}"
+
+SAVE_INFO="Timestamp: $(date)
+UUID: $(grep "$STR_UUID = " $STR_APP_PY | head -1 | cut -d"'" -f2)
+Main PID: $APP_PID
+Subscription Data: $NODE_INFO
+Decoded Nodes:
+$DECODED_NODES
+"
+echo "$SAVE_INFO" > "$NODE_INFO_STORAGE"
+echo
+echo -e "${C_GREEN}Node information saved to $NODE_INFO_STORAGE${C_NC}"
+echo -e "${C_YELLOW}Use 'bash $0 -v' to view anytime.${C_NC}"
+
+# --- Celebration Animation ---
+echo -e "\n\n${GREEN}喵~ 部署任务大成功啦！ >ω<${C_NC}"
+sleep 0.5
+echo -e "${YELLOW}正在为主人献上胜利的爱心... (｡♥‿♥｡)${C_NC}"
+sleep 0.5
+echo -e "${C_RED}"
+cat << "EOF"
+          * * * * * * * * * * * *
+        * * * * * * * * * *
+      * * * * * *
+     * * * *
+     * * * *
+      * * * *
+        * * * * * * * *
+            * * * *
+              * * * *
+                 * * * *
+                  * * * *
+                    * * *
+                        *
+EOF
+echo -e "${C_NC}"
+sleep 1
+echo -e "${BLUE}所有节点都准备就绪，正在检查最后的魔力...${C_NC}"
+for i in {1..20}; do echo -n "✨"; sleep 0.05; done
+echo -e "\n${C_GREEN}魔力注入完毕！随时可以出发咯！喵~${C_NC}\n"
+exit 0
