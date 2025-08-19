@@ -36,12 +36,13 @@ generate_uuid() {
 
 clear
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN} Python Xray Argo 一键部署脚本 (最终修正版) ${NC}"
+echo -e "${GREEN} Python Xray Argo 一键部署脚本 (网络优化版) ${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo
 echo -e "${BLUE}基于项目: ${YELLOW}https://github.com/eooce/python-xray-argo${NC}"
 echo
 echo -e "${GREEN}此脚本将自动执行“完整模式”部署，并从 Space Secrets 读取 HF Token。${NC}"
+echo -e "${GREEN}新增功能：自动检测并启用 TCP BBR 网络优化。${NC}"
 read -p "按 Enter 键开始部署..."
 
 # 自动选择完整模式
@@ -64,6 +65,36 @@ fi
 if ! command -v unzip &> /dev/null; then
     sudo apt-get install -y unzip
 fi
+
+# --- 新增：网络优化模块 ---
+echo
+echo -e "${BLUE}正在优化系统网络配置 (尝试启用 BBR)...${NC}"
+# 检查内核版本，BBR 需要 4.9 或更高版本
+KERNEL_VERSION_MAJOR=$(uname -r | cut -d'.' -f1)
+KERNEL_VERSION_MINOR=$(uname -r | cut -d'.' -f2)
+if [ "$KERNEL_VERSION_MAJOR" -gt 4 ] || { [ "$KERNEL_VERSION_MAJOR" -eq 4 ] && [ "$KERNEL_VERSION_MINOR" -ge 9 ]; }; then
+    if ! sysctl net.ipv4.tcp_congestion_control | grep -q "bbr"; then
+        echo -e "${YELLOW}检测到 BBR 未开启，正在尝试启用...${NC}"
+        # 检查 /etc/sysctl.conf 是否已存在相关配置
+        if ! grep -q "net.core.default_qdisc=fq" /etc/sysctl.conf; then
+            echo "net.core.default_qdisc=fq" | sudo tee -a /etc/sysctl.conf
+        fi
+        if ! grep -q "net.ipv4.tcp_congestion_control=bbr" /etc/sysctl.conf; then
+            echo "net.ipv4.tcp_congestion_control=bbr" | sudo tee -a /etc/sysctl.conf
+        fi
+        sudo sysctl -p > /dev/null 2>&1
+        if sysctl net.ipv4.tcp_congestion_control | grep -q "bbr"; then
+            echo -e "${GREEN}TCP BBR 已成功启用，网络性能将得到提升！${NC}"
+        else
+            echo -e "${RED}BBR 启用失败，请检查系统配置。${NC}"
+        fi
+    else
+        echo -e "${GREEN}TCP BBR 已经启用，无需修改。${NC}"
+    fi
+else
+    echo -e "${YELLOW}警告: 内核版本低于 4.9，无法启用 BBR。建议升级系统内核以获得最佳性能。${NC}"
+fi
+# --- 网络优化模块结束 ---
 
 if [ ! -d "$PROJECT_DIR_NAME" ]; then
     echo -e "${BLUE}下载完整仓库...${NC}"
@@ -497,18 +528,17 @@ function celebration_animation() {
     echo -e "${RED}"
     cat << "EOF"
           * * * * * * * * * * * *
-        * * *   *  *  *   *   * * *
-      * * *                    * * *
-     * *                          * *
-     * *                          * *
-      * *                        * *
-        * *                     * * 
-          * *                  * *
-            * *               * *
-              * *            * *
-                * *         * *
-                  * *      * *
-                    *   *   *
+        * * * * * * * * * *
+      * * * * * *
+     * * * *
+     * * * *
+      * * * *
+        * * * * * * * *
+            * * * *
+              * * * *
+                 * * * *
+                  * * * *
+                    * * *
                         *
 EOF
     echo -e "${NC}"
