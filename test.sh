@@ -36,13 +36,12 @@ generate_uuid() {
 
 clear
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN} Python Xray Argo 一键部署脚本 (动态IP优选版) ${NC}"
+echo -e "${GREEN} Python Xray Argo 一键部署脚本 (最终修正版) ${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo
 echo -e "${BLUE}基于项目: ${YELLOW}https://github.com/eooce/python-xray-argo${NC}"
 echo
 echo -e "${GREEN}此脚本将自动执行“完整模式”部署，并从 Space Secrets 读取 HF Token。${NC}"
-echo -e "${GREEN}新增功能：自动寻找并应用当前服务器最优的 Cloudflare IP。${NC}"
 read -p "按 Enter 键开始部署..."
 
 # 自动选择完整模式
@@ -65,39 +64,6 @@ fi
 if ! command -v unzip &> /dev/null; then
     sudo apt-get install -y unzip
 fi
-if ! command -v wget &> /dev/null; then
-    sudo apt-get install -y wget
-fi
-
-# --- 新增：动态优选Cloudflare IP模块 ---
-OPTIMIZED_CFIP=""
-echo
-echo -e "${BLUE}正在为您的服务器自动寻找最优的Cloudflare IP...${NC}"
-echo -e "${YELLOW}这个过程可能需要1-2分钟，请耐心等待...${NC}"
-# 从Github下载CloudflareSpeedTest工具
-# 检测架构
-ARCH=$(uname -m)
-if [ "$ARCH" = "x86_64" ]; then
-    ARCH="amd64"
-elif [ "$ARCH" = "aarch64" ]; then
-    ARCH="arm64"
-fi
-wget -O CloudflareST "https://github.com/XIU2/CloudflareSpeedTest/releases/download/v2.2.4/CloudflareST_linux_${ARCH}.tar.gz" > /dev/null 2>&1
-tar -zxf CloudflareST > /dev/null 2>&1
-chmod +x CloudflareST
-# 运行测速并获取最优IP
-IP_RESULT=$(./CloudflareST -tp 443 -n 200 -dn 10 -tl 250 -o result.csv -sl 5 | grep -oE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" | head -n 1)
-if [ -n "$IP_RESULT" ]; then
-    OPTIMIZED_CFIP=$IP_RESULT
-    echo -e "${GREEN}成功找到最优IP: ${OPTIMIZED_CFIP}${NC}"
-else
-    echo -e "${RED}自动寻找最优IP失败，将使用默认值。${NC}"
-    OPTIMIZED_CFIP="joeyblog.net"
-fi
-# 清理
-rm -f CloudflareST* result.csv
-# --- 动态优选IP模块结束 ---
-
 
 if [ ! -d "$PROJECT_DIR_NAME" ]; then
     echo -e "${BLUE}下载完整仓库...${NC}"
@@ -124,12 +90,12 @@ fi
 [ -f "app.py.backup" ] || cp app.py app.py.backup
 echo -e "${YELLOW}已备份原始文件为 app.py.backup${NC}"
 
-# 初始化保活变量
+# 初始化保活变量 (注意：这里不再初始化 HF_TOKEN)
 KEEP_ALIVE_HF="false"
 HF_REPO_ID=""
 HF_REPO_TYPE="spaces"
 
-# 定义保活配置函数
+# 定义保活配置函数（安全版 - 读取Space Secrets）
 configure_hf_keep_alive() {
     echo
     echo -e "${YELLOW}是否设置 Hugging Face API 自动保活? (y/n)${NC}"
@@ -138,10 +104,11 @@ configure_hf_keep_alive() {
     
     if [ "$SETUP_KEEP_ALIVE" = "y" ] || [ "$SETUP_KEEP_ALIVE" = "Y" ]; then
         echo -e "${BLUE}正在从 Space secrets 读取 Hugging Face 令牌...${NC}"
+        # 检查名为 HF_TOKEN 的环境变量是否存在且不为空
         if [ -z "$HF_TOKEN" ]; then
             echo -e "${RED}错误：未能从 Space secrets 中找到名为 HF_TOKEN 的令牌。${NC}"
             echo -e "${YELLOW}请确认您已在 Space 的 Settings -> Secrets 中添加了它并重启。${NC}"
-            KEEP_ALIVE_HF="false"
+            KEEP_ALIVE_HF="false" # 标记为失败，避免后续出错
             return
         fi
         
@@ -186,10 +153,13 @@ if [ -n "$PORT_INPUT" ]; then
     echo -e "${GREEN}端口已设置为: $PORT_INPUT${NC}"
 fi
 
-# --- 使用动态优选IP进行配置 ---
-echo -e "${BLUE}正在应用最优IP: $OPTIMIZED_CFIP${NC}"
-sed -i "s/CFIP = os.environ.get('CFIP', '[^']*')/CFIP = os.environ.get('CFIP', '$OPTIMIZED_CFIP')/" app.py
-echo -e "${GREEN}优选IP已自动设置为: $OPTIMIZED_CFIP${NC}"
+echo -e "${YELLOW}当前优选IP: $(grep "CFIP = " app.py | cut -d"'" -f4)${NC}"
+read -p "请输入优选IP/域名 (留空使用默认 joeyblog.net): " CFIP_INPUT
+if [ -z "$CFIP_INPUT" ]; then
+    CFIP_INPUT="joeyblog.net"
+fi
+sed -i "s/CFIP = os.environ.get('CFIP', '[^']*')/CFIP = os.environ.get('CFIP', '$CFIP_INPUT')/" app.py
+echo -e "${GREEN}优选IP已设置为: $CFIP_INPUT${NC}"
 
 echo -e "${YELLOW}当前优选端口: $(grep "CFPORT = " app.py | cut -d"'" -f4)${NC}"
 read -p "请输入优选端口 (留空保持不变): " CFPORT_INPUT
@@ -243,15 +213,8 @@ echo -e "${GREEN}扩展分流已自动配置${NC}"
 echo
 echo -e "${GREEN}完整配置完成！${NC}"
 
-# --- 脚本剩余部分与原版完全相同，此处省略以保持简洁 ---
-# ... (此处省略了 extended_patch.py, 服务启动, 节点生成等与原版完全一致的代码)
-# ... (The rest of the script, identical to the original, is omitted for brevity)
-# ... (It includes extended_patch.py, service startup, node generation, etc.)
+# --- 后续代码和原来保持一致 ---
 
-# 您可以将您原始脚本中从 "echo -e "${YELLOW}=== 当前配置摘要 ===${NC}"" 开始的
-# 所有后续代码直接粘贴到这里，它们无需任何修改即可工作。
-
-# 为了保证这份代码可以直接运行，我将补全剩余部分
 echo -e "${YELLOW}=== 当前配置摘要 ===${NC}"
 echo -e "UUID: $(grep "UUID = " app.py | head -1 | cut -d"'" -f2)"
 echo -e "节点名称: $(grep "NAME = " app.py | head -1 | cut -d"'" -f4)"
@@ -521,31 +484,37 @@ echo -e "${GREEN}扩展分流已集成，提升效率和隐私${NC}"
 echo -e "${GREEN}服务将持续在后台运行${NC}"
 echo
 echo -e "${GREEN}部署完成！感谢使用！${NC}"
-
+# 这是一个可以添加在您脚本中的新函数
 function celebration_animation() {
     echo -e "\n\n"
+    # 彩色动态文字 + 喵娘调皮风格
     echo -e "${GREEN}喵~ 部署任务大成功啦！ >ω<${NC}"
     sleep 0.5
     echo -e "${YELLOW}正在为主人献上胜利的爱心... (｡♥‿♥｡)${NC}"
     sleep 0.5
+
+    # 构建彩色爱心
     echo -e "${RED}"
     cat << "EOF"
           * * * * * * * * * * * *
-        * * * * * * * * * *
-      * * * * * *
-     * * * *
-     * * * *
-      * * * *
-        * * * * * * * *
-            * * * *
-              * * * *
-                 * * * *
-                  * * * *
-                    * * *
+        * * *   *  *  *   *   * * *
+      * * *                    * * *
+     * *                          * *
+     * *                          * *
+      * *                        * *
+        * *                     * * 
+          * *                  * *
+            * *               * *
+              * *            * *
+                * *         * *
+                  * *      * *
+                    *   *   *
                         *
 EOF
     echo -e "${NC}"
     sleep 1
+
+    # 循环动效 (一个简单的加载条)
     echo -e "${BLUE}所有节点都准备就绪，正在检查最后的魔力...${NC}"
     for i in {1..20}; do
         echo -n "✨"
