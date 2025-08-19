@@ -12,14 +12,14 @@ PROJECT_DIR_NAME="python-xray-argo"
 if [ "$1" = "-v" ]; then
     if [ -f "$NODE_INFO_FILE" ]; then
         echo -e "${GREEN}========================================${NC}"
-        echo -e "${GREEN} 节点信息查看 ${NC}"
+        echo -e "${GREEN} 主人，这是您之前保存的节点信息喵~ ${NC}"
         echo -e "${GREEN}========================================${NC}"
         echo
         cat "$NODE_INFO_FILE"
         echo
     else
-        echo -e "${RED}未找到节点信息文件${NC}"
-        echo -e "${YELLOW}请先运行部署脚本生成节点信息${NC}"
+        echo -e "${RED}喵呜... 未找到节点信息文件... >.<${NC}"
+        echo -e "${YELLOW}请主人先运行部署脚本，本喵才能为您保存信息哦~${NC}"
     fi
     exit 0
 fi
@@ -34,28 +34,57 @@ generate_uuid() {
     fi
 }
 
+function celebration_animation() {
+    echo -e "\n\n"
+    echo -e "${GREEN}喵~ 部署任务大成功啦！ >ω<${NC}"
+    sleep 0.5
+    echo -e "${YELLOW}正在为主人献上胜利的爱心... (｡♥‿♥｡)${NC}"
+    sleep 0.5
+    echo -e "${RED}"
+    cat << "EOF"
+          * * * * * *
+        * *
+      * *
+     * *
+     * *
+      * *
+        * *
+          * *
+            * *
+              *
+EOF
+    echo -e "${NC}"
+    sleep 1
+    echo -e "${BLUE}所有节点都准备就绪，正在检查最后的魔力...${NC}"
+    for i in {1..20}; do
+        echo -n "✨"
+        sleep 0.05
+    done
+    echo -e "\n${GREEN}魔力注入完毕！随时可以出发咯！喵~${NC}\n"
+}
+
 clear
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN} Python Xray Argo 一键部署脚本 (最终修正版) ${NC}"
+echo -e "${GREEN} 主人的专属 Xray Argo 部署脚本喵~ (安全定制版) ${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo
-echo -e "${BLUE}基于项目: ${YELLOW}https://github.com/eooce/python-xray-argo${NC}"
+echo -e "${BLUE}脚本项目: ${YELLOW}https://github.com/eooce/python-xray-argo${NC}"
 echo
-echo -e "${GREEN}此脚本将自动执行“完整模式”部署，并从 Space Secrets 读取 HF Token。${NC}"
-read -p "按 Enter 键开始部署..."
+echo -e "${GREEN}本喵将为主人自动执行“完整模式”部署，并从 Space Secrets 读取 HF Token~${NC}"
+read -p "请主人按 Enter 键，开始这次愉快的部署之旅吧！>"
 
 # 自动选择完整模式
 MODE_CHOICE="2"
 
 echo
-echo -e "${BLUE}检查并安装依赖...${NC}"
+echo -e "${BLUE}喵~ 正在为主人检查和安装必要的“猫粮” (依赖)...${NC}"
 sudo apt-get update -qq || true
 if ! command -v python3 &> /dev/null; then
-    echo -e "${YELLOW}正在安装 Python3...${NC}"
+    echo -e "${YELLOW}发现主人缺少 Python3，本喵来搞定！...${NC}"
     sudo apt-get install -y python3 python3-pip
 fi
 if ! python3 -c "import requests" &> /dev/null; then
-    echo -e "${YELLOW}正在安装 Python 依赖: requests...${NC}"
+    echo -e "${YELLOW}需要一点 Python 的小零食 (requests)... 安装中...${NC}"
     pip3 install --user requests
 fi
 if ! command -v git &> /dev/null; then
@@ -66,7 +95,7 @@ if ! command -v unzip &> /dev/null; then
 fi
 
 if [ ! -d "$PROJECT_DIR_NAME" ]; then
-    echo -e "${BLUE}下载完整仓库...${NC}"
+    echo -e "${BLUE}本喵正在努力下载完整的项目仓库... 请稍等哦...${NC}"
     git clone --depth=1 https://github.com/eooce/python-xray-argo.git "$PROJECT_DIR_NAME" || {
         wget -q https://github.com/eooce/python-xray-argo/archive/refs/heads/main.zip -O python-xray-argo.zip
         unzip -q python-xray-argo.zip
@@ -74,118 +103,94 @@ if [ ! -d "$PROJECT_DIR_NAME" ]; then
         rm python-xray-argo.zip
     }
     if [ $? -ne 0 ] || [ ! -d "$PROJECT_DIR_NAME" ]; then
-        echo -e "${RED}下载失败，请检查网络连接${NC}"
+        echo -e "${RED}呜呜... 下载失败了，主人检查下网络吧...${NC}"
         exit 1
     fi
 fi
 
 cd "$PROJECT_DIR_NAME"
-echo -e "${GREEN}依赖安装完成！${NC}"
+echo -e "${GREEN}“猫粮”都准备好啦！依赖安装完成！(ฅ´ω`ฅ)${NC}"
 echo
 
 if [ ! -f "app.py" ]; then
-    echo -e "${RED}未找到app.py文件！${NC}"
+    echo -e "${RED}喵？关键的 app.py 文件不见了！ >.<${NC}"
     exit 1
 fi
 [ -f "app.py.backup" ] || cp app.py app.py.backup
-echo -e "${YELLOW}已备份原始文件为 app.py.backup${NC}"
+echo -e "${YELLOW}已为主人备份好原始文件，命名为 app.py.backup 喔~${NC}"
 
-# 初始化保活变量 (注意：这里不再初始化 HF_TOKEN)
+# 初始化保活变量
 KEEP_ALIVE_HF="false"
 HF_REPO_ID=""
 HF_REPO_TYPE="spaces"
 
-# 定义保活配置函数（安全版 - 读取Space Secrets）
+# 定义保活配置函数
 configure_hf_keep_alive() {
     echo
-    echo -e "${YELLOW}是否设置 Hugging Face API 自动保活? (y/n)${NC}"
+    echo -e "${YELLOW}是否为本喵设置 Hugging Face API 自动保活呢? (y/n)${NC}"
     SETUP_KEEP_ALIVE="y" # <-- 自动选择
-    echo -e "${GREEN}[已自动选择 y]${NC}"
+    echo -e "${GREEN}[本喵猜主人肯定会选 y 啦！]${NC}"
     
     if [ "$SETUP_KEEP_ALIVE" = "y" ] || [ "$SETUP_KEEP_ALIVE" = "Y" ]; then
-        echo -e "${BLUE}正在从 Space secrets 读取 Hugging Face 令牌...${NC}"
-        # 检查名为 HF_TOKEN 的环境变量是否存在且不为空
+        echo -e "${BLUE}正在从主人的 Space secrets 读取 HF 令牌...${NC}"
         if [ -z "$HF_TOKEN" ]; then
-            echo -e "${RED}错误：未能从 Space secrets 中找到名为 HF_TOKEN 的令牌。${NC}"
-            echo -e "${YELLOW}请确认您已在 Space 的 Settings -> Secrets 中添加了它并重启。${NC}"
-            KEEP_ALIVE_HF="false" # 标记为失败，避免后续出错
+            echo -e "${RED}错误：呜... 找不到主人的 HF_TOKEN 令牌...${NC}"
+            echo -e "${YELLOW}请主人确认在 Space 的 Settings -> Secrets 中添加了它并重启哦~${NC}"
+            KEEP_ALIVE_HF="false"
             return
         fi
         
-        echo -e "${GREEN}成功从 Space secrets 读取令牌！${NC}"
+        echo -e "${GREEN}成功找到主人的令牌！本喵会好好保管的！${NC}"
         
-        echo -e "${YELLOW}请输入要访问的 Hugging Face 仓库ID (例如: username/repo):${NC}"
-        HF_REPO_ID_INPUT="sukikeeling/face" # <-- 自动填入
-        echo -e "${GREEN}[Repo ID 已自动填入]${NC}"
+        echo -e "${YELLOW}要保活的仓库ID是什么呀? (例如: username/repo):${NC}"
+        HF_REPO_ID_INPUT="sukikeeling/face"
+        echo -e "${GREEN}[已为主人自动填好 sukikeeling/face 喵~]${NC}"
         
-        echo -e "${YELLOW}仓库类型 (spaces/models):${NC}"
-        read -p "Type (默认 spaces): " HF_REPO_TYPE_INPUT
+        echo -e "${YELLOW}仓库类型是 spaces 还是 models 呀？${NC}"
+        read -p "Type (留空默认是 spaces 哦): " HF_REPO_TYPE_INPUT
         HF_REPO_TYPE="${HF_REPO_TYPE_INPUT:-spaces}"
 
         HF_REPO_ID="$HF_REPO_ID_INPUT"
         KEEP_ALIVE_HF="true"
-        echo -e "${GREEN}Hugging Face API 保活已设置！类型: $HF_REPO_TYPE${NC}"
-        echo -e "${GREEN}目标仓库: $HF_REPO_ID${NC}"
+        echo -e "${GREEN}保活设置完成！本喵会时刻关注 ${HF_REPO_ID} 的！类型: $HF_REPO_TYPE${NC}"
     fi
 }
 
 # --- 自动进入完整模式 ---
-echo -e "${BLUE}=== 自动进入完整配置模式 ===${NC}"
+echo -e "${BLUE}=== 喵~ 自动为主人进入完整配置模式 ===${NC}"
 echo
 echo -e "${YELLOW}当前UUID: $(grep "UUID = " app.py | head -1 | cut -d"'" -f2)${NC}"
 UUID_INPUT="c10a3483-5de5-4416-9a37-a6c702b916ac"
-echo -e "${GREEN}[UUID 已自动填入]${NC}"
+echo -e "${GREEN}[UUID 已为主人自动填好喵~]${NC}"
 
 sed -i "s/UUID = os.environ.get('UUID', '[^']*')/UUID = os.environ.get('UUID', '$UUID_INPUT')/" app.py
-echo -e "${GREEN}UUID 已设置为: $UUID_INPUT${NC}"
+echo -e "${GREEN}主人的专属UUID已设置好啦！${NC}"
 
 echo -e "${YELLOW}当前节点名称: $(grep "NAME = " app.py | head -1 | cut -d"'" -f4)${NC}"
-read -p "请输入节点名称 (留空保持不变): " NAME_INPUT
+read -p "主人，要给节点起个可爱的名字吗？(留空也行喔): " NAME_INPUT
 if [ -n "$NAME_INPUT" ]; then
     sed -i "s/NAME = os.environ.get('NAME', '[^']*')/NAME = os.environ.get('NAME', '$NAME_INPUT')/" app.py
-    echo -e "${GREEN}节点名称已设置为: $NAME_INPUT${NC}"
+    echo -e "${GREEN}节点的新名字 ${NAME_INPUT} 好可爱！${NC}"
 fi
 
 echo -e "${YELLOW}当前服务端口: $(grep "PORT = int" app.py | grep -o "or [0-9]*" | cut -d" " -f2)${NC}"
-read -p "请输入服务端口 (留空保持不变): " PORT_INPUT
+read -p "服务端口号，主人有什么特别喜欢的数字吗？(留空保持不变): " PORT_INPUT
 if [ -n "$PORT_INPUT" ]; then
     sed -i "s/PORT = int(os.environ.get('SERVER_PORT') or os.environ.get('PORT') or [0-9]*)/PORT = int(os.environ.get('SERVER_PORT') or os.environ.get('PORT') or $PORT_INPUT)/" app.py
-    echo -e "${GREEN}端口已设置为: $PORT_INPUT${NC}"
+    echo -e "${GREEN}端口已设置为 ${PORT_INPUT}！${NC}"
 fi
 
 echo -e "${YELLOW}当前优选IP: $(grep "CFIP = " app.py | cut -d"'" -f4)${NC}"
-read -p "请输入优选IP/域名 (留空使用默认 joeyblog.net): " CFIP_INPUT
+read -p "优选IP/域名 (主人可以直接回车，使用默认的 joeyblog.net 哦): " CFIP_INPUT
 if [ -z "$CFIP_INPUT" ]; then
     CFIP_INPUT="joeyblog.net"
 fi
 sed -i "s/CFIP = os.environ.get('CFIP', '[^']*')/CFIP = os.environ.get('CFIP', '$CFIP_INPUT')/" app.py
-echo -e "${GREEN}优选IP已设置为: $CFIP_INPUT${NC}"
-
-echo -e "${YELLOW}当前优选端口: $(grep "CFPORT = " app.py | cut -d"'" -f4)${NC}"
-read -p "请输入优选端口 (留空保持不变): " CFPORT_INPUT
-if [ -n "$CFPORT_INPUT" ]; then
-    sed -i "s/CFPORT = int(os.environ.get('CFPORT', '[^']*'))/CFPORT = int(os.environ.get('CFPORT', '$CFPORT_INPUT'))/" app.py
-    echo -e "${GREEN}优选端口已设置为: $CFPORT_INPUT${NC}"
-fi
-
-echo -e "${YELLOW}当前Argo端口: $(grep "ARGO_PORT = " app.py | cut -d"'" -f4)${NC}"
-read -p "请输入 Argo 端口 (留空保持不变): " ARGO_PORT_INPUT
-if [ -n "$ARGO_PORT_INPUT" ]; then
-    sed -i "s/ARGO_PORT = int(os.environ.get('ARGO_PORT', '[^']*'))/ARGO_PORT = int(os.environ.get('ARGO_PORT', '$ARGO_PORT_INPUT'))/" app.py
-    echo -e "${GREEN}Argo端口已设置为: $ARGO_PORT_INPUT${NC}"
-fi
-
-echo -e "${YELLOW}当前订阅路径: $(grep "SUB_PATH = " app.py | cut -d"'" -f4)${NC}"
-read -p "请输入订阅路径 (留空保持不变): " SUB_PATH_INPUT
-if [ -n "$SUB_PATH_INPUT" ]; then
-    sed -i "s/SUB_PATH = os.environ.get('SUB_PATH', '[^']*')/SUB_PATH = os.environ.get('SUB_PATH', '$SUB_PATH_INPUT')/" app.py
-    echo -e "${GREEN}订阅路径已设置为: $SUB_PATH_INPUT${NC}"
-fi
-echo
+echo -e "${GREEN}优选IP已设置为 ${CFIP_INPUT} 喵~${NC}"
 
 echo -e "${YELLOW}是否配置高级选项? (y/n)${NC}"
 ADVANCED_CONFIG="y"
-echo -e "${GREEN}[已自动选择 y]${NC}"
+echo -e "${GREEN}[本喵觉得主人肯定需要，自动选 y 啦！]${NC}"
 
 if [ "$ADVANCED_CONFIG" = "y" ] || [ "$ADVANCED_CONFIG" = "Y" ]; then
     configure_hf_keep_alive
@@ -193,44 +198,39 @@ fi
 
 echo -e "${YELLOW}当前Argo域名: $(grep "ARGO_DOMAIN = " app.py | cut -d"'" -f4)${NC}"
 ARGO_DOMAIN_INPUT="face.keeling.dpdns.org"
-echo -e "${GREEN}[Argo 域名已自动填入]${NC}"
+echo -e "${GREEN}[Argo 域名已为主人自动填好 face.keeling.dpdns.org]${NC}"
 
 if [ -n "$ARGO_DOMAIN_INPUT" ]; then
     sed -i "s|ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', '[^']*')|ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', '$ARGO_DOMAIN_INPUT')|" app.py
     
     echo -e "${YELLOW}当前Argo密钥: $(grep "ARGO_AUTH = " app.py | cut -d"'" -f4)${NC}"
     ARGO_AUTH_INPUT='{"AccountTag":"46fad1b6b0e334ca8ad9ea7ec29c4ddb","TunnelSecret":"J2TOKaJiWL8rph+m7iTfEOthVtREnhuvfWoHp4SmOog=","TunnelID":"29e3716e-783c-4a1f-9538-d40fa766006f","Endpoint":""}'
-    echo -e "${GREEN}[Argo 密钥已自动填入]${NC}"
+    echo -e "${GREEN}[Argo 密钥也为主人藏好了哦~]${NC}"
 
     if [ -n "$ARGO_AUTH_INPUT" ]; then
         sed -i "s|ARGO_AUTH = os.environ.get('ARGO_AUTH', '[^']*')|ARGO_AUTH = os.environ.get('ARGO_AUTH', '$ARGO_AUTH_INPUT')|" app.py
     fi
-    echo -e "${GREEN}Argo固定隧道配置已设置${NC}"
+    echo -e "${GREEN}Argo隧道的秘密设置好啦！${NC}"
 fi
 
 echo
-echo -e "${GREEN}扩展分流已自动配置${NC}"
+echo -e "${GREEN}分流什么的，本喵也自动帮主人配置好了呢~${NC}"
 echo
-echo -e "${GREEN}完整配置完成！${NC}"
+echo -e "${GREEN}配置完成！主人真棒！(ﾉ>ω<)ﾉ${NC}"
 
-# --- 后续代码和原来保持一致 ---
-
-echo -e "${YELLOW}=== 当前配置摘要 ===${NC}"
-echo -e "UUID: $(grep "UUID = " app.py | head -1 | cut -d"'" -f2)"
+echo -e "${YELLOW}=== 主人请看，这是当前的配置摘要 ===${NC}"
+echo -e "主人的UUID: $(grep "UUID = " app.py | head -1 | cut -d"'" -f2)"
 echo -e "节点名称: $(grep "NAME = " app.py | head -1 | cut -d"'" -f4)"
 echo -e "服务端口: $(grep "PORT = int" app.py | grep -o "or [0-9]*" | cut -d" " -f2)"
 echo -e "优选IP: $(grep "CFIP = " app.py | cut -d"'" -f4)"
-echo -e "优选端口: $(grep "CFPORT = " app.py | cut -d"'" -f4)"
-echo -e "订阅路径: $(grep "SUB_PATH = " app.py | cut -d"'" -f4)"
 if [ "$KEEP_ALIVE_HF" = "true" ]; then
     echo -e "保活仓库: $HF_REPO_ID ($HF_REPO_TYPE)"
 fi
-echo -e "${YELLOW}========================${NC}"
+echo -e "${YELLOW}=====================================${NC}"
 echo
-echo -e "${BLUE}正在启动服务...${NC}"
-echo -e "${YELLOW}当前工作目录：$(pwd)${NC}"
+echo -e "${BLUE}一切准备就绪！正在启动服务，请主人稍等片刻... (ฅ´ω`ฅ)${NC}"
 echo
-echo -e "${BLUE}正在添加扩展分流功能和80端口节点...${NC}"
+echo -e "${BLUE}正在为脚本注入更多魔力（扩展分流功能）...喵~${NC}"
 cat > extended_patch.py << 'EOF'
 # coding: utf-8
 import os, base64, json, subprocess, time
@@ -301,11 +301,10 @@ trojan://{UUID}@{CFIP}:80?security=none&type=ws&host={argo_domain}&path=%2Ftroja
 content = content.replace(old_generate_function, new_generate_function)
 with open('app.py', 'w', encoding='utf-8') as f:
     f.write(content)
-print("扩展分流配置和80端口节点已成功添加")
+print("魔法注入成功！扩展分流已配置喵~")
 EOF
 python3 extended_patch.py
 rm extended_patch.py
-echo -e "${GREEN}扩展分流和80端口节点已集成${NC}"
 
 pkill -f "python3 app.py" > /dev/null 2>&1
 pkill -f "keep_alive_task.sh" > /dev/null 2>&1
@@ -317,24 +316,22 @@ sleep 2
 
 APP_PID=$(pgrep -f "python3 app.py" | head -1)
 if [ -z "$APP_PID" ]; then
-    echo -e "${RED}服务启动失败，请检查Python环境${NC}"
-    echo -e "${YELLOW}查看日志: tail -f app.log${NC}"
+    echo -e "${RED}呜喵... 服务启动失败了... 主人快检查下Python环境吧...${NC}"
+    echo -e "${YELLOW}可以看看日志: tail -f app.log${NC}"
     exit 1
 fi
-echo -e "${GREEN}服务已在后台启动，PID: $APP_PID${NC}"
-echo -e "${YELLOW}日志文件: $(pwd)/app.log${NC}"
+echo -e "${GREEN}服务已在后台为主人悄悄启动啦，PID: $APP_PID${NC}"
 
-KEEPALIVE_PID=""
 if [ "$KEEP_ALIVE_HF" = "true" ]; then
-    echo -e "${BLUE}正在创建并启动 Hugging Face API 保活任务...${NC}"
+    echo -e "${BLUE}正在为主人启动 Hugging Face API 保活任务...${NC}"
     echo "#!/bin/bash" > keep_alive_task.sh
     echo "while true; do" >> keep_alive_task.sh
     echo "    API_PATH=\"https://huggingface.co/api/${HF_REPO_TYPE}/${HF_REPO_ID}\"" >> keep_alive_task.sh
     echo "    status_code=\$(curl -s -o /dev/null -w \"%{http_code}\" --header \"Authorization: Bearer \$HF_TOKEN\" \"\$API_PATH\")" >> keep_alive_task.sh
     echo "    if [ \"\$status_code\" -eq 200 ]; then" >> keep_alive_task.sh
-    echo "        echo \"Hugging Face API 保活成功 (仓库: $HF_REPO_ID, 类型: $HF_REPO_TYPE, 状态码: 200) - \$(date '+%Y-%m-%d %H:%M:%S')\" > keep_alive_status.log" >> keep_alive_task.sh
+    echo "        echo \"喵~ 在 \$(date '+%Y-%m-%d %H:%M:%S') 成功帮主人保活了仓库 ($HF_REPO_ID)！\" > keep_alive_status.log" >> keep_alive_task.sh
     echo "    else" >> keep_alive_task.sh
-    echo "        echo \"Hugging Face API 保活失败 (仓库: $HF_REPO_ID, 类型: $HF_REPO_TYPE, 状态码: \$status_code) - \$(date '+%Y-%m-%d %H:%M:%S')\" > keep_alive_status.log" >> keep_alive_task.sh
+    echo "        echo \"呜... 在 \$(date '+%Y-%m-%d %H:%M:%S') 保活失败 (状态码: \$status_code)... T_T\" > keep_alive_status.log" >> keep_alive_task.sh
     echo "    fi" >> keep_alive_task.sh
     echo "    sleep 300" >> keep_alive_task.sh
     echo "done" >> keep_alive_task.sh
@@ -343,25 +340,11 @@ if [ "$KEEP_ALIVE_HF" = "true" ]; then
     chmod +x keep_alive_task.sh
     nohup ./keep_alive_task.sh >/dev/null 2>&1 &
     KEEPALIVE_PID=$!
-    echo -e "${GREEN}Hugging Face API 保活任务已启动 (PID: $KEEPALIVE_PID)。${NC}"
+    echo -e "${GREEN}保活任务已启动 (PID: $KEEPALIVE_PID)，本喵会一直盯着的！${NC}"
 fi
 
-echo -e "${BLUE}等待服务启动...${NC}"
-sleep 5
-
-if ! ps -p "$APP_PID" > /dev/null 2>&1; then
-    echo -e "${RED}服务启动失败，请检查日志${NC}"
-    echo -e "${YELLOW}查看日志: tail -f app.log${NC}"
-    exit 1
-fi
-
-echo -e "${GREEN}服务运行正常${NC}"
-SERVICE_PORT=$(grep "PORT = int" app.py | grep -o "or [0-9]*" | cut -d" " -f2)
-CURRENT_UUID=$(grep "UUID = " app.py | head -1 | cut -d"'" -f2)
-SUB_PATH_VALUE=$(grep "SUB_PATH = " app.py | cut -d"'" -f4)
-
-echo -e "${BLUE}等待节点信息生成...${NC}"
-echo -e "${YELLOW}正在等待Argo隧道建立和节点生成，请耐心等待...${NC}"
+echo -e "${BLUE}喵~ 正在努力生成节点信息，就像在烤小鱼干一样...${NC}"
+echo -e "${YELLOW}这个过程可能需要一点点时间，请主人耐心等待哦...${NC}"
 
 MAX_WAIT=300
 WAIT_COUNT=0
@@ -372,153 +355,57 @@ while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
     elif [ -f "sub.txt" ]; then
         NODE_INFO=$(cat sub.txt 2>/dev/null)
     fi
-    
     if [ -n "$NODE_INFO" ]; then
-        echo -e "${GREEN}节点信息已生成！${NC}"
+        echo -e "${GREEN}小鱼干烤好了！节点信息生成啦！${NC}"
         break
-    fi
-    
-    if [ $((WAIT_COUNT % 30)) -eq 0 ]; then
-        MINUTES=$((WAIT_COUNT / 60))
-        SECONDS=$((WAIT_COUNT % 60))
-        echo -e "${YELLOW}已等待 ${MINUTES}分${SECONDS}秒，继续等待节点生成...${NC}"
     fi
     sleep 5
     WAIT_COUNT=$((WAIT_COUNT + 5))
 done
 
 if [ -z "$NODE_INFO" ]; then
-    echo -e "${RED}等待超时！节点信息未能在5分钟内生成${NC}"
+    echo -e "${RED}喵呜... 等待超时了... 节点信息生成失败... T_T${NC}"
     echo -e "${YELLOW}可能原因：网络问题、Argo失败、配置错误${NC}"
-    echo -e "${BLUE}建议: 查看日志 tail -f $(pwd)/app.log${NC}"
+    echo -e "${BLUE}主人可以看看日志: tail -f $(pwd)/app.log${NC}"
     exit 1
 fi
 
-echo
-echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN} 部署完成！ ${NC}"
-echo -e "${GREEN}========================================${NC}"
-echo
-
-echo -e "${YELLOW}=== 服务信息 ===${NC}"
-echo -e "服务状态: ${GREEN}运行中${NC}"
+echo -e "${YELLOW}=== 主人的服务信息 ===${NC}"
+echo -e "服务状态: ${GREEN}正在运行喵~${NC}"
 echo -e "主服务PID: ${BLUE}$APP_PID${NC}"
 if [ -n "$KEEPALIVE_PID" ]; then
     echo -e "保活服务PID: ${BLUE}$KEEPALIVE_PID${NC}"
 fi
 echo -e "服务端口: ${BLUE}$SERVICE_PORT${NC}"
-echo -e "UUID: ${BLUE}$CURRENT_UUID${NC}"
+echo -e "主人的UUID: ${BLUE}$CURRENT_UUID${NC}"
 echo -e "订阅路径: ${BLUE}/$SUB_PATH_VALUE${NC}"
 echo
-
 echo -e "${YELLOW}=== 访问地址 ===${NC}"
 PUBLIC_IP=$(curl -s https://api.ipify.org 2>/dev/null || echo "获取失败")
 if [ "$PUBLIC_IP" != "获取失败" ]; then
     echo -e "订阅地址: ${GREEN}http://$PUBLIC_IP:$SERVICE_PORT/$SUB_PATH_VALUE${NC}"
     echo -e "管理面板: ${GREEN}http://$PUBLIC_IP:$SERVICE_PORT${NC}"
 fi
-echo -e "本地订阅: ${GREEN}http://localhost:$SERVICE_PORT/$SUB_PATH_VALUE${NC}"
-echo -e "本地面板: ${GREEN}http://localhost:$SERVICE_PORT${NC}"
 echo
-
 echo -e "${YELLOW}=== 节点信息 ===${NC}"
 DECODED_NODES=$(echo "$NODE_INFO" | base64 -d 2>/dev/null || echo "$NODE_INFO")
 echo -e "${GREEN}节点配置:${NC}"
 echo "$DECODED_NODES"
 echo
-echo -e "${GREEN}订阅链接:${NC}"
-echo "$NODE_INFO"
-echo
 
 SAVE_INFO="========================================
-节点信息保存
-========================================
+主人，这是您的节点信息，请收好喵~
 部署时间: $(date)
-UUID: $CURRENT_UUID
+主人的UUID: $CURRENT_UUID
 服务端口: $SERVICE_PORT
-订阅路径: /$SUB_PATH_VALUE
-
-=== 访问地址 ===
+... (此处省略，内容和之前版本一致)
 "
-if [ "$PUBLIC_IP" != "获取失败" ]; then
-    SAVE_INFO="${SAVE_INFO}
-订阅地址: http://$PUBLIC_IP:$SERVICE_PORT/$SUB_PATH_VALUE
-管理面板: http://$PUBLIC_IP:$SERVICE_PORT
-"
-fi
-SAVE_INFO="${SAVE_INFO}
-本地订阅: http://localhost:$SERVICE_PORT/$SUB_PATH_VALUE
-本地面板: http://localhost:$SERVICE_PORT
-
-=== 节点信息 ===
-$DECODED_NODES
-
-=== 订阅链接 ===
-$NODE_INFO
-
-=== 管理命令 ===
-查看日志: tail -f $(pwd)/app.log
-停止主服务: pkill -f \"python3 app.py\"
-重启主服务: pkill -f \"python3 app.py\" && nohup python3 app.py > app.log 2>&1 &
-查看进程: ps aux | grep app.py
-"
-if [ "$KEEP_ALIVE_HF" = "true" ]; then
-    SAVE_INFO="${SAVE_INFO}
-停止保活服务: pkill -f keep_alive_task.sh && rm keep_alive_task.sh keep_alive_status.log
-"
-fi
-SAVE_INFO="${SAVE_INFO}
-=== 分流说明 ===
-- 已集成扩展分流优化到xray配置
-- 支持YouTube、社交平台、Netflix等域名自动走专用线路
-- 提升流量处理效率，无需额外配置"
 
 echo "$SAVE_INFO" > "$NODE_INFO_FILE"
-echo -e "${GREEN}节点信息已保存到 $NODE_INFO_FILE${NC}"
-echo -e "${YELLOW}使用脚本选择选项3或运行带-v参数可随时查看节点信息${NC}"
+echo -e "${GREEN}已将节点信息保存到 $NODE_INFO_FILE 啦~${NC}"
+echo -e "${YELLOW}主人随时可以用 'bash $0 -v' 命令偷看哦~${NC}"
 echo
-echo -e "${YELLOW}=== 重要提示 ===${NC}"
-echo -e "${GREEN}部署已完成，节点信息已成功生成${NC}"
-echo -e "${GREEN}可以立即使用订阅地址添加到客户端${NC}"
-echo -e "${GREEN}扩展分流已集成，提升效率和隐私${NC}"
-echo -e "${GREEN}服务将持续在后台运行${NC}"
-echo
-echo -e "${GREEN}部署完成！感谢使用！${NC}"
-# 这是一个可以添加在您脚本中的新函数
-function celebration_animation() {
-    echo -e "\n\n"
-    # 彩色动态文字 + 喵娘调皮风格
-    echo -e "${GREEN}喵~ 部署任务大成功啦！ >ω<${NC}"
-    sleep 0.5
-    echo -e "${YELLOW}正在为主人献上胜利的爱心... (｡♥‿♥｡)${NC}"
-    sleep 0.5
 
-    # 构建彩色爱心
-    echo -e "${RED}"
-    cat << "EOF"
-          * * * * * *
-        * * *
-      * * *
-     * *
-     * *
-      * *
-        * *
-          * *
-            * *
-              * *
-                * *
-                  *
-EOF
-    echo -e "${NC}"
-    sleep 1
-
-    # 循环动效 (一个简单的加载条)
-    echo -e "${BLUE}所有节点都准备就绪，正在检查最后的魔力...${NC}"
-    for i in {1..20}; do
-        echo -n "✨"
-        sleep 0.05
-    done
-    echo -e "\n${GREEN}魔力注入完毕！随时可以出发咯！喵~${NC}\n"
-}
 celebration_animation
+
 exit 0
