@@ -115,7 +115,7 @@ configure_hf_keep_alive() {
         echo -e "${GREEN}成功从 Space secrets 读取令牌！${NC}"
         
         echo -e "${YELLOW}请输入要访问的 Hugging Face 仓库ID (例如: username/repo):${NC}"
-        HF_REPO_ID_INPUT="sukikeeling/face" # <-- 自动填入
+        HF_REPO_ID_INPUT="zhengkeeling/face" # <-- 自动填入
         echo -e "${GREEN}[Repo ID 已自动填入]${NC}"
         
         echo -e "${YELLOW}仓库类型 (spaces/models):${NC}"
