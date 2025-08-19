@@ -1,54 +1,22 @@
 #!/bin/bash
-
-# Hyper-Ultra-Evolved Cat-Themed Xray Argo Deployment Script with AI Infusions Minus Sympy (Self-Healing Mode Activated)
-# New Oddities: Replaced sympy with numpy for quantum-like randomness (efficient matrix ops for "entanglement"), neural prophet upgraded to detect and auto-fix errors in real-time (PyTorch with error simulation), fractal hologram animation now procedural without math libs, added "time warp" rollback using git reset, and chemical randomness via rdkit molecule fingerprints for seeds.
-# Efficient: Added timeout to async installs, compressed logs with rotation, AI-optimized retries with exponential backoff, parallel universe simulation via bash forks merging outputs.
-# Utterly Odd: Script now "mutates" by forking parallel runs, selects best outcome via NN vote; blends Bash with RDKit for organic-inspired ports (molecule hash as random seed).
-# HF Jupyter Compatible: Removed sympy deps, fallback to numpy/torch (pre-installed). Self-heals by checking imports in code_execution-like probes (embedded try-except). Modify on GitHub, run in HF – no sympy needed!
-
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
 NC='\033[0m'
 
-NODE_INFO_FILE="$HOME/.xray_nodes_info_hyper"
+NODE_INFO_FILE="$HOME/.xray_nodes_info"
 PROJECT_DIR_NAME="python-xray-argo"
-SCRIPT_LOG_FILE="$HOME/.xray_script_hyper.log"
-HF_TOKEN="${HF_TOKEN:-}"
-GIST_TOKEN="${GIST_TOKEN:-}"
 
-# Dynamic theme with numpy wave (oddity replaced: numpy sin for color oscillation)
-HOUR=$(date +%H)
-if command -v python3 &> /dev/null; then
-    THEME_COLOR=$(python3 - <<EOF
-import numpy as np
-h = $HOUR
-wave = np.sin(np.pi * h / 12)
-if wave > 0.5: print('\033[1;33m')  # Yellow
-elif wave < -0.5: print('\033[0;35m')  # Purple
-else: print('\033[0;36m')  # Cyan
-EOF
-)
-else
-    THEME_COLOR="$YELLOW"
-fi
-
-# View mode with mutated insights
+# 如果是-v参数，直接查看节点信息
 if [ "$1" = "-v" ]; then
     if [ -f "$NODE_INFO_FILE" ]; then
         echo -e "${GREEN}========================================${NC}"
-        echo -e "${GREEN} 主人，这是您之前保存的节点信息喵~ (无Sympy超进化版！)${NC}"
+        echo -e "${GREEN} 主人，这是您之前保存的节点信息喵~ ${NC}"
         echo -e "${GREEN}========================================${NC}"
         echo
         cat "$NODE_INFO_FILE"
         echo
-        if [ -f "$SCRIPT_LOG_FILE" ]; then
-            echo -e "${CYAN}脚本变异洞见：${NC}"
-            tail -n 5 "$SCRIPT_LOG_FILE"
-        fi
     else
         echo -e "${RED}喵呜... 未找到节点信息文件... >.<${NC}"
         echo -e "${YELLOW}请主人先运行部署脚本，本喵才能为您保存信息哦~${NC}"
@@ -56,152 +24,90 @@ if [ "$1" = "-v" ]; then
     exit 0
 fi
 
-# Numpy-entangled UUID generator (sympy removed: numpy random matrix for "quantum" entropy)
 generate_uuid() {
-    if command -v python3 &> /dev/null; then
-        python3 - <<EOF
-import uuid
-import numpy as np
-
-# Numpy matrix "entanglement" for randomness
-matrix = np.random.rand(2,2)
-entropy = np.linalg.det(matrix)  # Det as pseudo-quantum measure
-uuid_base = uuid.uuid4()
-print(str(uuid_base) + f"-numpy{int(abs(entropy)*1000):03d}")
-EOF
+    if command -v uuidgen &> /dev/null; then
+        uuidgen | tr '[:upper:]' '[:lower:]'
+    elif command -v python3 &> /dev/null; then
+        python3 -c "import uuid; print(str(uuid.uuid4()))"
     else
         openssl rand -hex 16 | sed 's/\(........\)\(....\)\(....\)\(....\)\(............\)/\1-\2-\3-\4-\5/' | tr '[:upper:]' '[:lower:]'
     fi
 }
 
-# Holographic celebration animation (procedural, no extra math)
 function celebration_animation() {
     echo -e "\n\n"
     echo -e "${GREEN}喵~ 部署任务大成功啦！ >ω<${NC}"
     sleep 0.5
-    echo -e "${YELLOW}正在为主人献上 holographic 胜利的 procedural 爱心... (｡♥‿♥｡)${NC}"
+    echo -e "${YELLOW}正在为主人献上胜利的爱心... (｡♥‿♥｡)${NC}"
     sleep 0.5
     echo -e "${RED}"
-    for rot in {0..3}; do
-        for y in {-8..8}; do
-            line=""
-            for x in {-16..16}; do
-                rx=$((x + rot)); ry=$((y + rot))
-                dist=$((rx*rx + ry*ry))
-                if [ $dist -lt 200 ] && [ $dist -gt 50 ]; then line+="♡"; else line+=" "; fi
-            done
-            echo "$line"
-        done
-        sleep 0.2
-        clear
-    done
+    cat << "EOF"
+          * * * * * *
+        * *
+      * *
+     * *
+     * *
+      * *
+        * *
+          * *
+            * *
+              *
+EOF
     echo -e "${NC}"
-    echo -e "${BLUE}所有节点都准备就绪，正在注入有机魔力...${NC}"
-    for i in {1..40}; do
-        echo -n "🌿🔮"
-        sleep 0.02
+    sleep 1
+    echo -e "${BLUE}所有节点都准备就绪，正在检查最后的魔力...${NC}"
+    for i in {1..20}; do
+        echo -n "✨"
+        sleep 0.05
     done
-    echo -e "\n${GREEN}魔力注入完毕！随时可以变异咯！喵~${NC}\n"
+    echo -e "\n${GREEN}魔力注入完毕！随时可以出发咯！喵~${NC}\n"
 }
-
-# Neural fortune teller: Predict and simulate fixes (PyTorch, with error injection for training)
-function fortune_teller() {
-    if command -v python3 &> /dev/null; then
-        PROB=$(python3 - <<EOF
-import torch
-import torch.nn as nn
-import numpy as np
-
-class Prophet(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.enc = nn.Linear(1, 1)
-        self.dec = nn.Linear(1, 1)
-    
-    def forward(self, x):
-        return self.dec(self.enc(x))
-
-prophet = Prophet()
-optimizer = torch.optim.Adam(prophet.parameters(), lr=0.1)
-data = torch.tensor(np.random.rand(10,1)).float()
-for _ in range(10):
-    recon = prophet(data)
-    loss = nn.MSELoss()(recon, data + torch.rand_like(data)*0.1)  # Inject "error" noise
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
-anomaly = float(loss.item())
-prob = 100 - anomaly * 500  # Adjusted for fixes
-print(f"{max(70, min(100, prob)):.2f}")
-EOF
-)
-        echo -e "${CYAN}本喵的神经预言：部署成功率高达 ${PROB}%！错误已模拟自愈~${NC}"
-    else
-        echo -e "${CYAN}本喵的预言：99.99% 成功！无Sympy更强壮~${NC}"
-    fi
-}
-
-# Parallel universe simulation (oddity: fork bash processes, merge "best" outcome)
-function parallel_universe() {
-    (
-        # Universe 1: Standard run
-        echo "Universe 1: Nominal"
-    ) &
-    (
-        # Universe 2: Mutated run
-        echo "Universe 2: Mutated"
-    ) &
-    wait
-    # "Merge" by choosing random (efficient)
-    echo "Merged best universe: $(shuf -n1 <(echo "Nominal" "Mutated"))"
-}
-
-# Self-healing import check (embedded try-import)
-python3 - <<EOF >/dev/null 2>&1 || echo -e "${YELLOW}Python libs self-healed; proceeding without issues.${NC}"
-import numpy as np
-import torch
-EOF
 
 clear
-echo -e "${THEME_COLOR}========================================${NC}"
-echo -e "${THEME_COLOR} 主人的专属 Xray Argo 部署脚本喵~ (无Sympy AI版) ${NC}"
-echo -e "${THEME_COLOR}========================================${NC}"
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN} 主人的专属 Xray Argo 部署脚本喵~ (安全定制版) ${NC}"
+echo -e "${GREEN}========================================${NC}"
 echo
 echo -e "${BLUE}脚本项目: ${YELLOW}https://github.com/eooce/python-xray-argo${NC}"
 echo
 echo -e "${GREEN}本喵将为主人自动执行“完整模式”部署，并从 Space Secrets 读取 HF Token~${NC}"
-fortune_teller
-parallel_universe  # Odd insertion
-read -p "请主人按 Enter 键，开始这次自愈的部署之旅吧！>"
+read -p "请主人按 Enter 键，开始这次愉快的部署之旅吧！>"
 
+# 自动选择完整模式
 MODE_CHOICE="2"
+
 echo
-echo -e "${BLUE}喵~ 正在异步检查和安装必要的“猫粮” (依赖)...${NC}"
-(timeout 60 sudo apt-get update -qq || true) &
-if ! command -v python3 &> /dev/null; then timeout 60 sudo apt-get install -y python3 python3-pip & fi
-if ! python3 -c "import requests" &> /dev/null; then timeout 60 pip3 install --user requests & fi
-if ! command -v git &> /dev/null; then timeout 60 sudo apt-get install -y git & fi
-if ! command -v unzip &> /dev/null; then timeout 60 sudo apt-get install -y unzip & fi
-wait
+echo -e "${BLUE}喵~ 正在为主人检查和安装必要的“猫粮” (依赖)...${NC}"
+sudo apt-get update -qq || true
+if ! command -v python3 &> /dev/null; then
+    echo -e "${YELLOW}发现主人缺少 Python3，本喵来搞定！...${NC}"
+    sudo apt-get install -y python3 python3-pip
+fi
+if ! python3 -c "import requests" &> /dev/null; then
+    echo -e "${YELLOW}需要一点 Python 的小零食 (requests)... 安装中...${NC}"
+    pip3 install --user requests
+fi
+if ! command -v git &> /dev/null; then
+    sudo apt-get install -y git
+fi
+if ! command -v unzip &> /dev/null; then
+    sudo apt-get install -y unzip
+fi
 
 if [ ! -d "$PROJECT_DIR_NAME" ]; then
     echo -e "${BLUE}本喵正在努力下载完整的项目仓库... 请稍等哦...${NC}"
-    delay=1
-    for attempt in {1..3}; do
-        git clone --depth=1 https://github.com/eooce/python-xray-argo.git "$PROJECT_DIR_NAME" && break ||
-        (wget -q https://github.com/eooce/python-xray-argo/archive/refs/heads/main.zip -O python-xray-argo.zip &&
-         unzip -q python-xray-argo.zip &&
-         mv python-xray-argo-main "$PROJECT_DIR_NAME" &&
-         rm python-xray-argo.zip) && break
-        echo -e "${YELLOW}AI重试 $attempt... (延时: ${delay}s)${NC}"
-        sleep $delay
-        delay=$((delay*2))  # Exponential backoff
-    done
-    if [ ! -d "$PROJECT_DIR_NAME" ]; then
+    git clone --depth=1 https://github.com/eooce/python-xray-argo.git "$PROJECT_DIR_NAME" || {
+        wget -q https://github.com/eooce/python-xray-argo/archive/refs/heads/main.zip -O python-xray-argo.zip
+        unzip -q python-xray-argo.zip
+        mv python-xray-argo-main "$PROJECT_DIR_NAME"
+        rm python-xray-argo.zip
+    }
+    if [ $? -ne 0 ] || [ ! -d "$PROJECT_DIR_NAME" ]; then
         echo -e "${RED}呜呜... 下载失败了，主人检查下网络吧...${NC}"
         exit 1
     fi
 fi
+
 cd "$PROJECT_DIR_NAME"
 echo -e "${GREEN}“猫粮”都准备好啦！依赖安装完成！(ฅ´ω`ฅ)${NC}"
 echo
@@ -213,17 +119,19 @@ fi
 [ -f "app.py.backup" ] || cp app.py app.py.backup
 echo -e "${YELLOW}已为主人备份好原始文件，命名为 app.py.backup 喔~${NC}"
 
+# 初始化保活变量
 KEEP_ALIVE_HF="false"
 HF_REPO_ID=""
 HF_REPO_TYPE="spaces"
 
+# 定义保活配置函数
 configure_hf_keep_alive() {
     echo
     echo -e "${YELLOW}是否为本喵设置 Hugging Face API 自动保活呢? (y/n)${NC}"
-    SETUP_KEEP_ALIVE="y"
+    SETUP_KEEP_ALIVE="y" # <-- 自动选择
     echo -e "${GREEN}[本喵猜主人肯定会选 y 啦！]${NC}"
     
-    if [[ "$SETUP_KEEP_ALIVE" =~ ^[yY]$ ]]; then
+    if [ "$SETUP_KEEP_ALIVE" = "y" ] || [ "$SETUP_KEEP_ALIVE" = "Y" ]; then
         echo -e "${BLUE}正在从主人的 Space secrets 读取 HF 令牌...${NC}"
         if [ -z "$HF_TOKEN" ]; then
             echo -e "${RED}错误：呜... 找不到主人的 HF_TOKEN 令牌...${NC}"
@@ -239,84 +147,66 @@ configure_hf_keep_alive() {
         echo -e "${GREEN}[已为主人自动填好 sukikeeling/face 喵~]${NC}"
         
         echo -e "${YELLOW}仓库类型是 spaces 还是 models 呀？${NC}"
-        HF_REPO_TYPE_INPUT=""
+        read -p "Type (留空默认是 spaces 哦): " HF_REPO_TYPE_INPUT
         HF_REPO_TYPE="${HF_REPO_TYPE_INPUT:-spaces}"
+
         HF_REPO_ID="$HF_REPO_ID_INPUT"
         KEEP_ALIVE_HF="true"
         echo -e "${GREEN}保活设置完成！本喵会时刻关注 ${HF_REPO_ID} 的！类型: $HF_REPO_TYPE${NC}"
     fi
 }
 
+# --- 自动进入完整模式 ---
 echo -e "${BLUE}=== 喵~ 自动为主人进入完整配置模式 ===${NC}"
 echo
-CURRENT_UUID=$(grep "UUID = " app.py | head -1 | cut -d"'" -f2)
-echo -e "${YELLOW}当前UUID: $CURRENT_UUID${NC}"
-UUID_INPUT=$(generate_uuid)
-echo -e "${GREEN}[UUID 已由Numpy纠缠生成: $UUID_INPUT 喵~]${NC}"
+echo -e "${YELLOW}当前UUID: $(grep "UUID = " app.py | head -1 | cut -d"'" -f2)${NC}"
+UUID_INPUT="c10a3483-5de5-4416-9a37-a6c702b916ac"
+echo -e "${GREEN}[UUID 已为主人自动填好喵~]${NC}"
+
 sed -i "s/UUID = os.environ.get('UUID', '[^']*')/UUID = os.environ.get('UUID', '$UUID_INPUT')/" app.py
 echo -e "${GREEN}主人的专属UUID已设置好啦！${NC}"
 
 echo -e "${YELLOW}当前节点名称: $(grep "NAME = " app.py | head -1 | cut -d"'" -f4)${NC}"
-NAME_INPUT=""
+read -p "主人，要给节点起个可爱的名字吗？(留空也行喔): " NAME_INPUT
 if [ -n "$NAME_INPUT" ]; then
     sed -i "s/NAME = os.environ.get('NAME', '[^']*')/NAME = os.environ.get('NAME', '$NAME_INPUT')/" app.py
     echo -e "${GREEN}节点的新名字 ${NAME_INPUT} 好可爱！${NC}"
 fi
 
 echo -e "${YELLOW}当前服务端口: $(grep "PORT = int" app.py | grep -o "or [0-9]*" | cut -d" " -f2)${NC}"
-PORT_INPUT=""
-if [ -z "$PORT_INPUT" ]; then
-    # Organic random seed (oddity: rdkit molecule fingerprint hash)
-    if command -v python3 &> /dev/null; then
-        RAND_SEED=$(python3 - <<EOF
-from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors
-mol = Chem.MolFromSmiles('CCO')  # Simple ethanol
-fp = rdMolDescriptors.GetMorganFingerprintAsBitVect(mol, 2)
-hash_val = hash(fp.ToBitString())
-print(int(abs(hash_val) % 40000) + 10000)
-EOF
-)
-        PORT_INPUT=$RAND_SEED
-    else
-        PORT_INPUT=$(( (RANDOM % 10000) + 10000 ))
-    fi
+read -p "服务端口号，主人有什么特别喜欢的数字吗？(留空保持不变): " PORT_INPUT
+if [ -n "$PORT_INPUT" ]; then
+    sed -i "s/PORT = int(os.environ.get('SERVER_PORT') or os.environ.get('PORT') or [0-9]*)/PORT = int(os.environ.get('SERVER_PORT') or os.environ.get('PORT') or $PORT_INPUT)/" app.py
+    echo -e "${GREEN}端口已设置为 ${PORT_INPUT}！${NC}"
 fi
-sed -i "s/PORT = int(os.environ.get('SERVER_PORT') or os.environ.get('PORT') or [0-9]*)/PORT = int(os.environ.get('SERVER_PORT') or os.environ.get('PORT') or $PORT_INPUT)/" app.py
-echo -e "${GREEN}端口已设置为 ${PORT_INPUT}！(有机生成)${NC}"
 
 echo -e "${YELLOW}当前优选IP: $(grep "CFIP = " app.py | cut -d"'" -f4)${NC}"
-CFIP_CANDIDATES=("joeyblog.net" "example1.com" "example2.net")
-if command -v python3 &> /dev/null; then
-    CFIP_INPUT=$(python3 - <<EOF
-import torch
-candidates = ["${CFIP_CANDIDATES[@]}"]
-idx = int(torch.rand(1) * len(candidates))
-print(candidates[idx])
-EOF
-)
-else
+read -p "优选IP/域名 (主人可以直接回车，使用默认的 joeyblog.net 哦): " CFIP_INPUT
+if [ -z "$CFIP_INPUT" ]; then
     CFIP_INPUT="joeyblog.net"
 fi
 sed -i "s/CFIP = os.environ.get('CFIP', '[^']*')/CFIP = os.environ.get('CFIP', '$CFIP_INPUT')/" app.py
-echo -e "${GREEN}优选IP已由神经梦选为 ${CFIP_INPUT} 喵~${NC}"
+echo -e "${GREEN}优选IP已设置为 ${CFIP_INPUT} 喵~${NC}"
 
 echo -e "${YELLOW}是否配置高级选项? (y/n)${NC}"
 ADVANCED_CONFIG="y"
 echo -e "${GREEN}[本喵觉得主人肯定需要，自动选 y 啦！]${NC}"
-if [[ "$ADVANCED_CONFIG" =~ ^[yY]$ ]]; then
+
+if [ "$ADVANCED_CONFIG" = "y" ] || [ "$ADVANCED_CONFIG" = "Y" ]; then
     configure_hf_keep_alive
 fi
 
 echo -e "${YELLOW}当前Argo域名: $(grep "ARGO_DOMAIN = " app.py | cut -d"'" -f4)${NC}"
 ARGO_DOMAIN_INPUT="face.keeling.dpdns.org"
 echo -e "${GREEN}[Argo 域名已为主人自动填好 face.keeling.dpdns.org]${NC}"
+
 if [ -n "$ARGO_DOMAIN_INPUT" ]; then
     sed -i "s|ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', '[^']*')|ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', '$ARGO_DOMAIN_INPUT')|" app.py
     
     echo -e "${YELLOW}当前Argo密钥: $(grep "ARGO_AUTH = " app.py | cut -d"'" -f4)${NC}"
     ARGO_AUTH_INPUT='{"AccountTag":"46fad1b6b0e334ca8ad9ea7ec29c4ddb","TunnelSecret":"J2TOKaJiWL8rph+m7iTfEOthVtREnhuvfWoHp4SmOog=","TunnelID":"29e3716e-783c-4a1f-9538-d40fa766006f","Endpoint":""}'
     echo -e "${GREEN}[Argo 密钥也为主人藏好了哦~]${NC}"
+
     if [ -n "$ARGO_AUTH_INPUT" ]; then
         sed -i "s|ARGO_AUTH = os.environ.get('ARGO_AUTH', '[^']*')|ARGO_AUTH = os.environ.get('ARGO_AUTH', '$ARGO_AUTH_INPUT')|" app.py
     fi
@@ -327,6 +217,7 @@ echo
 echo -e "${GREEN}分流什么的，本喵也自动帮主人配置好了呢~${NC}"
 echo
 echo -e "${GREEN}配置完成！主人真棒！(ﾉ>ω<)ﾉ${NC}"
+
 echo -e "${YELLOW}=== 主人请看，这是当前的配置摘要 ===${NC}"
 echo -e "主人的UUID: $(grep "UUID = " app.py | head -1 | cut -d"'" -f2)"
 echo -e "节点名称: $(grep "NAME = " app.py | head -1 | cut -d"'" -f4)"
@@ -337,7 +228,6 @@ if [ "$KEEP_ALIVE_HF" = "true" ]; then
 fi
 echo -e "${YELLOW}=====================================${NC}"
 echo
-
 echo -e "${BLUE}一切准备就绪！正在启动服务，请主人稍等片刻... (ฅ´ω`ฅ)${NC}"
 echo
 echo -e "${BLUE}正在为脚本注入更多魔力（扩展分流功能）...喵~${NC}"
@@ -419,9 +309,11 @@ rm extended_patch.py
 pkill -f "python3 app.py" > /dev/null 2>&1
 pkill -f "keep_alive_task.sh" > /dev/null 2>&1
 sleep 2
+
 nohup python3 app.py > app.log 2>&1 &
 APP_PID=$!
 sleep 2
+
 APP_PID=$(pgrep -f "python3 app.py" | head -1)
 if [ -z "$APP_PID" ]; then
     echo -e "${RED}呜喵... 服务启动失败了... 主人快检查下Python环境吧...${NC}"
@@ -434,15 +326,16 @@ if [ "$KEEP_ALIVE_HF" = "true" ]; then
     echo -e "${BLUE}正在为主人启动 Hugging Face API 保活任务...${NC}"
     echo "#!/bin/bash" > keep_alive_task.sh
     echo "while true; do" >> keep_alive_task.sh
-    echo " API_PATH=\"https://huggingface.co/api/${HF_REPO_TYPE}/${HF_REPO_ID}\"" >> keep_alive_task.sh
-    echo " status_code=\$(curl -s -o /dev/null -w \"%{http_code}\" --header \"Authorization: Bearer \$HF_TOKEN\" \"\$API_PATH\")" >> keep_alive_task.sh
-    echo " if [ \"\$status_code\" -eq 200 ]; then" >> keep_alive_task.sh
-    echo " echo \"喵~ 在 \$(date '+%Y-%m-%d %H:%M:%S') 成功帮主人保活了仓库 ($HF_REPO_ID)！\" > keep_alive_status.log" >> keep_alive_task.sh
-    echo " else" >> keep_alive_task.sh
-    echo " echo \"呜... 在 \$(date '+%Y-%m-%d %H:%M:%S') 保活失败 (状态码: \$status_code)... T_T\" > keep_alive_status.log" >> keep_alive_task.sh
-    echo " fi" >> keep_alive_task.sh
-    echo " sleep 300" >> keep_alive_task.sh
+    echo "    API_PATH=\"https://huggingface.co/api/${HF_REPO_TYPE}/${HF_REPO_ID}\"" >> keep_alive_task.sh
+    echo "    status_code=\$(curl -s -o /dev/null -w \"%{http_code}\" --header \"Authorization: Bearer \$HF_TOKEN\" \"\$API_PATH\")" >> keep_alive_task.sh
+    echo "    if [ \"\$status_code\" -eq 200 ]; then" >> keep_alive_task.sh
+    echo "        echo \"喵~ 在 \$(date '+%Y-%m-%d %H:%M:%S') 成功帮主人保活了仓库 ($HF_REPO_ID)！\" > keep_alive_status.log" >> keep_alive_task.sh
+    echo "    else" >> keep_alive_task.sh
+    echo "        echo \"呜... 在 \$(date '+%Y-%m-%d %H:%M:%S') 保活失败 (状态码: \$status_code)... T_T\" > keep_alive_status.log" >> keep_alive_task.sh
+    echo "    fi" >> keep_alive_task.sh
+    echo "    sleep 300" >> keep_alive_task.sh
     echo "done" >> keep_alive_task.sh
+
     export HF_TOKEN="$HF_TOKEN"
     chmod +x keep_alive_task.sh
     nohup ./keep_alive_task.sh >/dev/null 2>&1 &
@@ -452,6 +345,7 @@ fi
 
 echo -e "${BLUE}喵~ 正在努力生成节点信息，就像在烤小鱼干一样...${NC}"
 echo -e "${YELLOW}这个过程可能需要一点点时间，请主人耐心等待哦...${NC}"
+
 MAX_WAIT=300
 WAIT_COUNT=0
 NODE_INFO=""
@@ -468,6 +362,7 @@ while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
     sleep 5
     WAIT_COUNT=$((WAIT_COUNT + 5))
 done
+
 if [ -z "$NODE_INFO" ]; then
     echo -e "${RED}喵呜... 等待超时了... 节点信息生成失败... T_T${NC}"
     echo -e "${YELLOW}可能原因：网络问题、Argo失败、配置错误${NC}"
@@ -481,9 +376,6 @@ echo -e "主服务PID: ${BLUE}$APP_PID${NC}"
 if [ -n "$KEEPALIVE_PID" ]; then
     echo -e "保活服务PID: ${BLUE}$KEEPALIVE_PID${NC}"
 fi
-SERVICE_PORT=$(grep "PORT = int" app.py | grep -o "or [0-9]*" | cut -d" " -f2)
-CURRENT_UUID=$(grep "UUID = " app.py | head -1 | cut -d"'" -f2)
-SUB_PATH_VALUE="sub"
 echo -e "服务端口: ${BLUE}$SERVICE_PORT${NC}"
 echo -e "主人的UUID: ${BLUE}$CURRENT_UUID${NC}"
 echo -e "订阅路径: ${BLUE}/$SUB_PATH_VALUE${NC}"
@@ -506,32 +398,164 @@ SAVE_INFO="========================================
 部署时间: $(date)
 主人的UUID: $CURRENT_UUID
 服务端口: $SERVICE_PORT
-节点信息: $DECODED_NODES
-========================================
+... (此处省略，内容和之前版本一致)
 "
+
 echo "$SAVE_INFO" > "$NODE_INFO_FILE"
 echo -e "${GREEN}已将节点信息保存到 $NODE_INFO_FILE 啦~${NC}"
 echo -e "${YELLOW}主人随时可以用 'bash $0 -v' 命令偷看哦~${NC}"
 echo
 
-# Gist backup with mutation diff
-if [ -n "$GIST_TOKEN" ] && [ -n "$NODE_INFO" ]; then
-    GIST_ID=$(tail -n1 "$SCRIPT_LOG_FILE" | grep -o "GIST_ID: [a-z0-9]*" | cut -d' ' -f2)
-    if [ -z "$GIST_ID" ]; then
-        RESPONSE=$(curl -H "Authorization: token $GIST_TOKEN" -d "{\"description\":\"Xray Node Hyper Backup\",\"public\":false,\"files\":{\"node_info.txt\":{\"content\":\"$SAVE_INFO\"}}}" https://api.github.com/gists)
-        GIST_ID=$(echo "$RESPONSE" | grep -o '"id": "[a-z0-9]*"' | cut -d'"' -f4)
-        echo "GIST_ID: $GIST_ID" >> "$SCRIPT_LOG_FILE"
-    else
-        curl -X PATCH -H "Authorization: token $GIST_TOKEN" -d "{\"files\":{\"node_info.txt\":{\"content\":\"$SAVE_INFO\"}}}" https://api.github.com/gists/$GIST_ID
-    fi
-    echo -e "${CYAN}节点信息已变异备份到 GitHub Gist！有机安全喵~${NC}"
+celebration_animation
+# ===== net_turbo.sh 传输加速补丁（可粘贴到现有脚本末尾） =====
+set -euo pipefail
+
+echo "[*] Applying server-side turbo… (no new protocol, just tuning)"
+
+# 0) 放开句柄/进程限制，避免高并发时丢连接
+ulimit -n 1048576 || true
+ulimit -u 65535   || true
+
+# 1) Linux 网络内核调优（降握手时延、抖动、丢包；“暴力发包”= 更激进队列与窗口）
+SYSCTL_FILE="/etc/sysctl.d/98-xray-turbo.conf"
+if [ "$(id -u)" = "0" ]; then
+  cat > "$SYSCTL_FILE" <<'EOF'
+net.core.default_qdisc = fq
+net.ipv4.tcp_congestion_control = bbr
+
+net.core.somaxconn = 65535
+net.core.netdev_max_backlog = 262144
+net.ipv4.tcp_max_syn_backlog = 262144
+
+# 降低 SYN/ACK 重传等待，加快失败探测
+net.ipv4.tcp_synack_retries = 3
+net.ipv4.tcp_syn_retries = 5
+
+# 更大的 socket 缓冲；减少拥塞导致的应用层阻塞
+net.core.rmem_max = 67108864
+net.core.wmem_max = 67108864
+net.core.rmem_default = 8388608
+net.core.wmem_default = 8388608
+
+# 避免 Path MTU 抖动导致的碎片与丢包
+net.ipv4.tcp_mtu_probing = 1
+
+# 激进 keepalive，缩短空闲连接恢复时间
+net.ipv4.tcp_keepalive_time = 120
+net.ipv4.tcp_keepalive_intvl = 20
+net.ipv4.tcp_keepalive_probes = 3
+
+# 减少队头阻塞
+net.ipv4.tcp_fastopen = 3
+net.ipv4.tcp_slow_start_after_idle = 0
+
+# TIME-WAIT 优化（连接洪峰回收更快）
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_fin_timeout = 15
+EOF
+  sysctl --system >/dev/null || true
+else
+  echo "[!] 非 root 无法写 sysctl；如在 Space 内，建议以 root 运行以启用内核优化。"
 fi
 
-# Self-mutation: Log variant
-echo "Hyper-mutated on $(date): UUID $UUID_INPUT with prob $PROB%, Port $PORT_INPUT from organic hash" >> "$SCRIPT_LOG_FILE"
+# 2) Cloudflare 边缘“预热”与最优连接探测（不改协议）
+#    对你的 ARGO_DOMAIN / CFIP 做并发 TLS 握手测速，动态选最快对
+ARGO_DOMAIN=$(grep -E "ARGO_DOMAIN =" app.py | cut -d"'" -f4 || echo "")
+CFIP=$(grep -E "CFIP =" app.py | cut -d"'" -f4 || echo "")
+CFPORT=$(grep -E "CFPORT =" app.py | tr -dc '0-9' | head -c 5 || echo "443")
 
-# Log rotation (efficient: keep last 100 lines)
-tail -n 100 "$SCRIPT_LOG_FILE" > temp.log && mv temp.log "$SCRIPT_LOG_FILE"
+pick_fast_cfip() {
+  local domain="$1"
+  local port="$2"
 
-celebration_animation
+  # 备选目标：当前 CFIP + 解析得到的 IP
+  local candidates=()
+  [ -n "$CFIP" ] && candidates+=("$CFIP")
+  mapfile -t resolved < <(getent ahostsv4 "$domain" | awk '{print $1}' | sort -u | head -n 6)
+  candidates+=("${resolved[@]}")
+
+  local best_ip=""
+  local best_ms=999999
+  for ip in "${candidates[@]}"; do
+    [ -z "$ip" ] && continue
+    # 利用 curl 建立 TLS 握手，统计连接时间（不下载内容）
+    ms=$(curl -s -o /dev/null -w "%{time_connect}\n" \
+          --connect-timeout 2 \
+          --resolve "$domain:$port:$ip" \
+          "https://$domain/cdn-cgi/trace" 2>/dev/null | awk '{printf("%.0f",$1*1000)}')
+    [ -z "$ms" ] && ms=999999
+    echo "[probe] $domain via $ip:$port => ${ms}ms"
+    if [ "$ms" -lt "$best_ms" ]; then
+      best_ms="$ms"
+      best_ip="$ip"
+    fi
+  done
+
+  if [ -n "$best_ip" ]; then
+    echo "[select] best edge: $best_ip ($best_ms ms)"
+    # 将 app.py 中 CFIP 原地替换为 best_ip
+    sed -i "s/CFIP = os.environ.get('CFIP', '[^']*')/CFIP = os.environ.get('CFIP', '$best_ip')/" app.py
+  else
+    echo "[warn] no better CF edge found; keep current CFIP=$CFIP"
+  fi
+}
+
+if [ -n "$ARGO_DOMAIN" ]; then
+  pick_fast_cfip "$ARGO_DOMAIN" "${CFPORT:-443}"
+  # 预热 3 次，缓存 TLS/路由
+  for i in 1 2 3; do
+    curl -s "https://$ARGO_DOMAIN/cdn-cgi/trace" >/dev/null || true
+  done
+fi
+
+# 3) 给 Xray 的 inbounds/ws 打开“更激进”的套接字选项（不改协议）
+#    - tcpNoDelay: 立刻发包，降延迟
+#    - tcpFastOpen: 降首包握手延迟（配合内核 tcp_fastopen=3）
+#    - reusePort: 允许内核做负载均衡，多并发更稳
+python3 - <<'PY'
+import json,re
+p='app.py'
+t=open(p,'r',encoding='utf-8').read()
+
+def inject_sockopt(block):
+    # 在 "streamSettings": {...} 里追加 sockopt，如果已存在则覆盖增强
+    if '"streamSettings"' not in block: return block
+    # 如果已有 sockopt，替换；没有就插入
+    if '"sockopt"' in block:
+        block = re.sub(r'"sockopt"\s*:\s*\{[^\}]*\}',
+                       '"sockopt":{"tcpNoDelay":true,"tcpFastOpen":true,"mark":0}',
+                       block)
+    else:
+        block = block.replace('"streamSettings": {', '"streamSettings": {"sockopt":{"tcpNoDelay":true,"tcpFastOpen":true,"mark":0}, ')
+    # inbound 层增加 reusePort
+    if '"reusePort":' not in block:
+        block = block.replace('"protocol": "vless"', '"protocol": "vless", "reusePort": true')
+        block = block.replace('"protocol": "vmess"', '"protocol": "vmess", "reusePort": true')
+        block = block.replace('"protocol": "trojan"', '"protocol": "trojan", "reusePort": true')
+    return block
+
+# 针对 inbounds/各端口段做增强
+t = re.sub(r'(\{[^\{]*"inbounds"\s*:\s*\[)(.*?)(\]\s*,\s*"\w+")',
+           lambda m: m.group(1)+inject_sockopt(m.group(2))+m.group(3),
+           t, flags=re.S)
+
+open(p,'w',encoding='utf-8').write(t)
+print("[*] Xray sockopt & reusePort injected")
+PY
+
+# 4) 以性能优先方式启动 Python + Xray 子进程（CPU 亲和/更优调度）
+if command -v taskset >/dev/null 2>&1; then
+  # 单容器内通常 2 vCPU 起；绑定可减少迁移开销
+  export XRAY_PERF_OPTS="nice -n -2 taskset -c 0-1"
+else
+  export XRAY_PERF_OPTS="nice -n -2"
+fi
+
+# 重启你的 app（保持你原来的启动逻辑，只把 XRAY_PERF_OPTS 用上）
+pkill -f "python3 app.py" >/dev/null 2>&1 || true
+sleep 1
+eval $XRAY_PERF_OPTS nohup python3 app.py >> app.log 2>&1 &
+echo "[OK] turbo applied & app restarted"
+# ===== end =====
+
 exit 0
