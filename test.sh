@@ -484,5 +484,43 @@ echo -e "${GREEN}扩展分流已集成，提升效率和隐私${NC}"
 echo -e "${GREEN}服务将持续在后台运行${NC}"
 echo
 echo -e "${GREEN}部署完成！感谢使用！${NC}"
+# 这是一个可以添加在您脚本中的新函数
+function celebration_animation() {
+    echo -e "\n\n"
+    # 彩色动态文字 + 喵娘调皮风格
+    echo -e "${GREEN}喵~ 部署任务大成功啦！ >ω<${NC}"
+    sleep 0.5
+    echo -e "${YELLOW}正在为主人献上胜利的爱心... (｡♥‿♥｡)${NC}"
+    sleep 0.5
 
+    # 构建彩色爱心
+    echo -e "${RED}"
+    cat << "EOF"
+          * * * * * * * * * * * *
+        * * *                * * *
+      * * *                   * * *
+     * *                         * *
+     * *                          * *
+      * *                        * *
+        * *                     * * 
+          * *                  * *
+            * *              * *
+              * *           * *
+                * *        * *
+                  *        *
+                    *    *
+                       *
+EOF
+    echo -e "${NC}"
+    sleep 1
+
+    # 循环动效 (一个简单的加载条)
+    echo -e "${BLUE}所有节点都准备就绪，正在检查最后的魔力...${NC}"
+    for i in {1..20}; do
+        echo -n "✨"
+        sleep 0.05
+    done
+    echo -e "\n${GREEN}魔力注入完毕！随时可以出发咯！喵~${NC}\n"
+}
+celebration_animation
 exit 0
