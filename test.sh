@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-#  FINAL DIAGNOSTIC VERSION - With Intelligent Health Check
+#  FINAL SUCCESS VERSION - Removed Unnecessary Network Call
 # =================================================================
 
 # --- Style Definitions ---
@@ -37,7 +37,7 @@ echo -e "${C_GREEN}========================================${NC}"
 echo -e "${C_GREEN} Python Xray Argo - Automated & Restored ${NC}"
 echo -e "${C_GREEN}========================================${NC}"
 echo
-echo -e "${C_BLUE}Based on: https://github.com/eooce/python-xray-argo${C_NC}"
+echo -e "${C_BLUE}Based on: https://github.com/eooce/python-xray-argo${NC}"
 echo -e "${C_GREEN}Script will run automatically...${C_NC}"; sleep 2
 
 # --- Dependency Installation ---
@@ -83,7 +83,7 @@ echo -e "${C_YELLOW}Original $S_APP_PY has been backed up.${C_NC}"
 # --- Automated Configuration (Non-interactive) ---
 echo -e "${C_BLUE}=== Entering Automated Full Configuration ===${C_NC}"
 
-UUID_INPUT="c10a3483-5de5-4416-9a37-a6c702b916ac"
+UUID_INPUT="c10a3483-5de5-4416--a6c702b916ac"
 sed -i "s/UUID = os.environ.get('UUID', '[^']*')/UUID = os.environ.get('UUID', '$UUID_INPUT')/" $S_APP_PY
 
 ARGO_DOMAIN_INPUT="face.keeling.dpdns.org"
@@ -103,8 +103,8 @@ else
 fi
 echo -e "${C_GREEN}Configuration applied automatically.${C_NC}"
 
-# --- Restore Original, Working Patcher ---
-echo -e "${C_BLUE}Applying original robust patch...${C_NC}"
+# --- Final Patcher with Hanging-fix ---
+echo -e "${C_BLUE}Applying final patch (removed hanging curl command)...${C_NC}"
 cat > extended_patch.py << 'EOF'
 # coding: utf-8
 import os, base64, json, subprocess, time
@@ -128,6 +128,7 @@ new_config = '''config = {
     "routing": { "domainStrategy": "IPIfNonMatch", "rules": [ { "type": "field", "domain": [ "youtube.com", "youtu.be", "googlevideo.com", "ytimg.com", "gstatic.com", "googleapis.com", "ggpht.com", "googleusercontent.com", "facebook.com", "fb.com", "fbcdn.net", "instagram.com", "cdninstagram.com", "fbsbx.com", "api.facebook.com", "twitter.com", "x.com", "twimg.com", "t.co", "discord.com", "discordapp.com", "discord.gg", "discord.media", "discordapp.net", "telegram.org", "t.me", "telegram.me", "web.telegram.org", "cdn.telegram.org", "pluto.web.telegram.org", "venus.web.telegram.org", "apollo.web.telegram.org", "whatsapp.com", "whatsapp.net", "meta.com", "meta.ai", "api.meta.ai", "api.whatsapp.com", "messenger.com", "api.messenger.com", "tiktok.com", "tiktokv.com", "ttlivecdn.com", "byteoversea.com", "musical.ly", "tik-tokcdn.com", "netflix.com", "netflix.net", "nflxvideo.net", "nflximg.net", "nflxso.net", "nflxext.com" ], "outboundTag": "media" } ] }
 }'''
 content = content.replace(old_config, new_config)
+# THIS IS THE CRITICAL FIX: The function that was hanging is replaced.
 old_generate_function = '''# Generate links and subscription content
 async def generate_links(argo_domain):
     meta_info = subprocess.run(['curl', '-s', 'https://speed.cloudflare.com/meta'], capture_output=True, text=True)
@@ -150,9 +151,9 @@ trojan://{UUID}@{CFIP}:{CFPORT}?security=tls&sni={argo_domain}&fp=chrome&type=ws
     return sub_txt'''
 new_generate_function = '''# Generate links and subscription content
 async def generate_links(argo_domain):
-    meta_info = subprocess.run(['curl', '-s', 'https://speed.cloudflare.com/meta'], capture_output=True, text=True)
-    meta_info = meta_info.stdout.split('"')
-    ISP = f"{meta_info[25]}-{meta_info[17]}".replace(' ', '_').strip()
+    # REMOVED the curl subprocess call that was causing the script to hang.
+    # REPLACED dynamic ISP name with a static one.
+    ISP = "HF-Node"
     time.sleep(1)
     VMESS_TLS = {"v": "2", "ps": f"{NAME}-{ISP}-TLS", "add": CFIP, "port": CFPORT, "id": UUID, "aid": "0", "scy": "none", "net": "ws", "type": "none", "host": argo_domain, "path": "/vmess-argo?ed=2560", "tls": "tls", "sni": argo_domain, "alpn": "", "fp": "chrome"}
     VMESS_80 = {"v": "2", "ps": f"{NAME}-{ISP}-80", "add": CFIP, "port": "80", "id": UUID, "aid": "0", "scy": "none", "net": "ws", "type": "none", "host": argo_domain, "path": "/vmess-argo?ed=2560", "tls": "", "sni": "", "alpn": "", "fp": ""}
@@ -205,21 +206,18 @@ if [ "$KEEP_ALIVE_HF" = "true" ]; then
     echo -e "${C_GREEN}Keep-Alive task started.${C_NC}"
 fi
 
-# --- NEW: Intelligent Health Check Loop ---
+# --- Intelligent Health Check Loop ---
 echo -e "${C_BLUE}Waiting for node generation (max 3 minutes)...${C_NC}"
 MAX_WAIT=180
 ELAPSED=0
 NODE_INFO=""
 while [ $ELAPSED -lt $MAX_WAIT ]; do
-    # Check if the python process has crashed
     if ! ps -p $APP_PID > /dev/null; then
         echo -e "\n${C_RED}ERROR: The Python service has crashed!${C_NC}"
         echo -e "${C_YELLOW}--- Last 10 lines of log (app.log): ---${C_NC}"
         tail -n 10 app.log
         exit 1
     fi
-
-    # Check for the final success file
     if [ -f "sub.txt" ]; then
         NODE_INFO=$(cat sub.txt 2>/dev/null)
         if [ -n "$NODE_INFO" ]; then
@@ -227,16 +225,11 @@ while [ $ELAPSED -lt $MAX_WAIT ]; do
             break
         fi
     fi
-    
-    # Print a status update to the same line
     echo -n -e "\r${C_YELLOW}Elapsed: ${ELAPSED}s. Monitoring service health... ${C_NC}"
-
-    # Wait for the next check
     sleep 10
     ELAPSED=$((ELAPSED + 10))
 done
 
-# Check if the loop timed out
 if [ -z "$NODE_INFO" ]; then
     echo -e "\n${C_RED}Timeout! Node generation took too long.${C_NC}"
     echo -e "${C_YELLOW}This often means the Argo tunnel failed to connect inside the Python script.${C_NC}"
