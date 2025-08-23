@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-#  FINAL CORRECTED VERSION - Based on User's Original Working Script
+#  FINAL DIAGNOSTIC VERSION - With Intelligent Health Check
 # =================================================================
 
 # --- Style Definitions ---
@@ -98,13 +98,12 @@ if [ -z "$HF_TOKEN" ]; then
     KEEP_ALIVE_HF="false"
 else
     KEEP_ALIVE_HF="true"
-    # 3. Update Repo ID
     HF_REPO_ID="zhengkeeling/dp"
     HF_REPO_TYPE="spaces"
 fi
 echo -e "${C_GREEN}Configuration applied automatically.${C_NC}"
 
-# --- 4. Restore Original, Working Patcher ---
+# --- Restore Original, Working Patcher ---
 echo -e "${C_BLUE}Applying original robust patch...${C_NC}"
 cat > extended_patch.py << 'EOF'
 # coding: utf-8
@@ -206,19 +205,45 @@ if [ "$KEEP_ALIVE_HF" = "true" ]; then
     echo -e "${C_GREEN}Keep-Alive task started.${C_NC}"
 fi
 
-# --- Wait for Node Info ---
-echo -e "${C_BLUE}Waiting for node generation...${C_NC}"
+# --- NEW: Intelligent Health Check Loop ---
+echo -e "${C_BLUE}Waiting for node generation (max 3 minutes)...${C_NC}"
+MAX_WAIT=180
+ELAPSED=0
 NODE_INFO=""
-for i in {1..30}; do
-    if [ -f "sub.txt" ]; then NODE_INFO=$(cat sub.txt 2>/dev/null); fi
-    if [ -n "$NODE_INFO" ]; then break; fi
-    sleep 5
+while [ $ELAPSED -lt $MAX_WAIT ]; do
+    # Check if the python process has crashed
+    if ! ps -p $APP_PID > /dev/null; then
+        echo -e "\n${C_RED}ERROR: The Python service has crashed!${C_NC}"
+        echo -e "${C_YELLOW}--- Last 10 lines of log (app.log): ---${C_NC}"
+        tail -n 10 app.log
+        exit 1
+    fi
+
+    # Check for the final success file
+    if [ -f "sub.txt" ]; then
+        NODE_INFO=$(cat sub.txt 2>/dev/null)
+        if [ -n "$NODE_INFO" ]; then
+            echo -e "\n${C_GREEN}Node information generated successfully!${C_NC}"
+            break
+        fi
+    fi
+    
+    # Print a status update to the same line
+    echo -n -e "\r${C_YELLOW}Elapsed: ${ELAPSED}s. Monitoring service health... ${C_NC}"
+
+    # Wait for the next check
+    sleep 10
+    ELAPSED=$((ELAPSED + 10))
 done
 
+# Check if the loop timed out
 if [ -z "$NODE_INFO" ]; then
-    echo -e "${C_RED}Timeout! Node info not generated.${C_NC}"; exit 1
+    echo -e "\n${C_RED}Timeout! Node generation took too long.${C_NC}"
+    echo -e "${C_YELLOW}This often means the Argo tunnel failed to connect inside the Python script.${C_NC}"
+    echo -e "${C_YELLOW}--- Last 10 lines of log (app.log): ---${C_NC}"
+    tail -n 10 app.log
+    exit 1
 fi
-echo -e "${C_GREEN}Node information generated!${C_NC}"
 
 # --- Display Final Information ---
 DECODED_NODES=$(echo "$NODE_INFO"|base64 -d 2>/dev/null||echo "Decode failed.")
