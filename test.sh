@@ -1,3 +1,11 @@
+---
+title: Xray Argo Service
+emoji: 🚀
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 8080
+---
 #!/bin/bash
 # =================================================================
 #  FINAL STABLE VERSION - Direct JSON Generation
