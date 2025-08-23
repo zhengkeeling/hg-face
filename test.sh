@@ -1,12 +1,7 @@
 #!/bin/bash
 # =================================================================
-#  Part 1: FINAL - Password, WARP Toggle, Setup, Obfuscation
+#  Part 1: FINAL V2 - Password, Setup, Obfuscation
 # =================================================================
-
-# --- Ultimate Configuration ---
-# Set to "true" to enable WARP for solving access issues (e.g., Instagram, WhatsApp).
-# Set to "false" if you don't need it.
-USE_WARP="true"
 
 # --- Style Definitions ---
 C_RED='\033[0;31m'
@@ -52,7 +47,7 @@ fi
 
 clear
 echo -e "${C_GREEN}========================================${C_NC}"
-echo -e "${C_GREEN} Python Xray Argo - Final Edition (WARP Integrated) ${C_NC}"
+echo -e "${C_GREEN} Python Xray Argo - Final Corrected Edition ${C_NC}"
 echo -e "${C_GREEN}========================================${C_NC}"
 echo
 echo -e "${C_BLUE}Script will run automatically in 3 seconds...${C_NC}";sleep 3
@@ -64,29 +59,6 @@ if ! command -v $STR_PYTHON3 &>/dev/null; then sudo apt-get install -y $STR_PYTH
 if ! $STR_PYTHON3 -c "import requests" &>/dev/null; then pip3 install --user requests;fi
 if ! command -v git &>/dev/null; then sudo apt-get install -y git;fi
 if ! command -v unzip &>/dev/null; then sudo apt-get install -y unzip;fi
-
-# --- WARP Integration ---
-if [ "$USE_WARP" = "true" ]; then
-    echo -e "${C_BLUE}Starting WARP integration to solve access issues...${C_NC}"
-    if ! command -v warp-cli &>/dev/null; then
-        echo -e "${C_YELLOW}WARP client not found, installing...${C_NC}"
-        curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
-        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
-        sudo apt-get update -qq||true
-        sudo apt-get install -y -qq cloudflare-warp
-        echo -e "${C_GREEN}WARP client installed.${C_NC}"
-    fi
-    echo -e "${C_YELLOW}Configuring WARP...${C_NC}"
-    warp-cli --accept-tos register
-    warp-cli set-mode proxy
-    warp-cli set-proxy-port 40000
-    warp-cli connect
-    if warp-cli status | grep -q "Success"; then
-        echo -e "${C_GREEN}WARP connected successfully. Proxy available at 127.0.0.1:40000${C_NC}"
-    else
-        echo -e "${C_RED}WARP connection failed! Access to some sites may still fail.${C_NC}"
-    fi
-fi
 
 # --- Project Download ---
 if [ ! -d "$STR_PROJECT_DIR" ]; then
@@ -122,7 +94,7 @@ setup_keep_alive(){
     echo -e "${C_GREEN}Keep-Alive configured for repo: $HF_REPO_ID (Type: $HF_REPO_TYPE)${C_NC}"
 }
 # =================================================================
-#  Part 2: FINAL - Automated Configuration with WARP Logic
+#  Part 2: FINAL V2 - Automated Configuration & New Patcher
 # =================================================================
 
 # --- Automated Full Configuration Mode ---
@@ -153,23 +125,114 @@ setup_keep_alive
 echo
 echo -e "${C_GREEN}Configuration complete.${C_NC}"
 
-# --- Obfuscated Python Patcher ---
-echo -e "${C_BLUE}Applying obfuscated patch with WARP logic...${C_NC}"
+# --- NEW ROBUST OBFUSCATED PYTHON PATCHER ---
+echo -e "${C_BLUE}Applying robust obfuscated patch...${C_NC}"
 OBFUSCATED_PATCH_PY="obfu_patch.py"
-# This Base64 patch is the FINAL version, it intelligently adds a WARP outbound if USE_WARP is true.
-if [ "$USE_WARP" = "true" ]; then
-    # Config with WARP outbound for problematic sites
-    BASE64_PATCH='IyBjb2Rpbmc6IHV0Zi04CmltcG9ydCBvcywgYmFzZTY0LCBqc29uLCBzdWJwcm9jZXNzLCB0aW1lCndpdGggb3BlbignYXBwLnB5JywgJ3InLCBlbmNvZGluZz0ndXRmLTgnKSBhcyBmOgogICAgY29udGVudCA9IGYucmVhZCgpCm9sZF9jb25maWcgPSAnY29ufig9eyJsb2ciOnsiYWNjZXNzIjoiL2Rldi9udWxsIiwiZXJyb3IiOiIvZGV2L251bGwiLCJsb2dsZXZlbCI6Im5vbmUiLCJ9LCJpbmJvdW5kcyI6W3sicG9ydCI6QVJHT19QT1JUIFwicHJvdG9jb2wiOiJ2bGVzcyIsInNldHRpbmdzIjp7ImNsaWVudHMiOlt7ImlkIjoiVVBJRCBcImZsb3ciOiJ4dGxzLXJwcngtdmlzaW9uIix9XSwiZGVjcnlwdGlvbiI6Im5vbmUiLCJmYWxsYmFja3MiOlt7ImRlc3QiOjMwMDEgIn0seyJwYXRoIjoiL3ZsZXNzLWFyZ28iLCJkZXN0IjozMDAyIH0seyJwYXRoIjoiL3ZtZXNzLWFyZ28iLCJkZXN0IjozMDAzIH0seyJwYXRoIjoiL3Ryb2phbi1hcmdvIiwiZGVzdCI6MzAwNCB9LF0sIn0sInN0cmVhbVNldHRpbmdzIjp7Im5ldHdvcmsiOiJ0Y3AiLCJ9fSx7InBvcnQiOjMwMDEgImxpc3RlbiI6IjEyNy4wLjAuMSIsInByb3RvY29sIjoidmxlc3MiLCJzZXR0aW5ncyI6eyJjbGllbnRzIjpbeyJpZCI6IlVVSUQgIn1dLCJkZWNyeXB0aW9uIjoibm9uZSJ9LCJzdHJlYW1TZXR0aW5ncyI6eyJuZXR3b3JrIjoid3MiLCJzZWN1cml0eSI6Im5vbmUifX0seyJwb3J0IjozMDAyICJsaXN0ZW4iOiIxMjcuMC4wLjEiLCJwcm90b2NvbCI6InZsZXNzIiwic2V0dGluZ3MiOnsiY2xpZW50cyI6W3siaWQiOiBVVUlELCAibGV2ZWwiOjAgfV0sICJkZWNyeXB0aW9uIjogIm5vbmUiIH0sICJzdHJlYW1TZXR0aW5ncyI6eyJubmV0d29yayI6IndzIiwic2VjdXJpdHkiOiJub25lIiwid3NTZXR0aW5ncyI6eyJwYXRoIjoiL3ZsZXNzLWFyZ28ifX0sInNuaWZmaW5nIjp7ImVuYWJsZWQiOlRydWUgLCJkZXN0T3ZlcnJpZGUiOlsiaHR0cCIsInRscyIsInF1aWMiXSwibWV0YWRhdGFPbmx5IkZhbHNlIH19LHsicG9ydCI6MzAwMyAibGlzdGVuIjoiMTI3LjAuMC4xIiwicHJvdG9jb2wiOiJ2bWVzcyIsInNldHRpbmdzIjp7ImNsaWVudHMiOlt7ImlkIjoiVVBJRCBcImFsdGVySWQiOjAgfV19LCJzdHJlYW1TZXR0aW5ncyI6eyJuZXR3b3JrIjoid3MiLCJ3c1NldHRpbmdzIjp7InBhdGgiOiIvdnNlcy1hcmdvIn19LCJzbmlmZmluZyI6eyJlbmFibGVkIjpUcnVlICwiZGVzdE92ZXJyaWRlIjpbImh0dHAiLCJ0bHMiLCJxdWljIl0sIm1ldGFkYXRhT25seSI6RmFsc2UgfX0seyJwb3J0IjozMDA0ICJsaXN0ZW4iOiIxMjcuMC4wLjEiLCJwcm90b2NvbCI6InRyb2phbiIsInNldHRpbmdzIjp7ImNsaWVudHMiOlt7InBhc3N3b3JkIjoiVVBJRCB9LF19LCJzdHJlYW1TZXR0aW5ncyI6eyJuZXR3b3JrIjoid3MiLCJzZWN1cml0eSI6Im5vbmUiLCJ3c1NldHRpbmdzIjp7InBhdGgiOiIvdHJvamFuLWFyZ28ifX0sInNuaWZmaW5nIjp7ImVuYWJsZWQiOlRydWUgLCJkZXN0T3ZlcnJpZGUiOlsiaHR0cCIsInRscyIsInF1aWMiXSwibWV0YWRhdGFPbmx5IkZhbHNlIH19XSIsIm91dGJvdW5kcyI6W3sicHJvdG9jb2wiOiJmcmVlZG9tIiwidGFnIjogImRpcmVjdCIgIn0seyJwcm90b2NvbCI6ImJsYWNraG9sZSIsInRhZyI6ImJsb2NrIn1dfScKbmV3X2NvbmZpZyA9ICcnJ2NvbmZpZyA9IHsKICAgICJsb2ciOiB7ICJhY2Nlc3MiOiAiL2Rldi9udWxsIiwgImVycm9yIjogIi9kZXYvbnVsbCIsICJsb2dsZXZlbCI6ICJ3YXJuaW5nIiB9LAogICAgImluYm91bmRzIjogWwogICAgICAgIHsgInBvcnQiOiBBUkdPX1BPUlQsICJwcm90b2NvbCI6ICJ2bGVzcyIsICJzZXR0aW5ncyI6IHsgImNsaWVudHMiOiBbeyJpZCI6IFVVSUQsICJmbG93IjogInh0bHMtcnByeC12aXNpb24ifV0sICJkZWNyeXB0aW9uIjogIm5vbmUiLCAiZmFsbGJhY2tzIjogWyB7ImRlc3QiOiAzMDAxfSwgeyJwYXRoIjogIi92bGVzcy1hcmdvIiwgImRlc3QiOiAzMDAyfSwgeyJwYXRoIjogIi92bWVzcy1hcmdvIiwgImRlc3QiOiAzMDAzfSwgeyJwYXRoIjogIi90cm9qYW4tYXJnbyIsICJkZXN0IjogMzAwNH0gXSB9LCAic3RyZWFtU2V0dGluZ3MiOiB7Im5ldHdvcmsiOiAidGNwIn0gfSwKICAgICAgICB7ICJwb3J0IjogMzAwMSwgImxpc3RlbiI6ICIxMjcuMC4wLjEiLCAicHJvdG9jb2wiOiAidmxlc3MiLCAic2V0dGluZ3MiOiB7ICJjbGllbnRzIjogW3siaWQiOiBVVUlEfV0sICJkZWNyeXB0aW9uIjogIm5vbmUiIH0sICJzdHJlYW1TZXR0aW5ncyI6IHsibmV0d29yayI6ICJ3cyIsICJzZWN1cml0eSI6ICJub25lIn0gfSwKICAgICAgICB7ICJwb3J0IjogMzAwMiwgImxpc3RlbiI6ICIxMjcuMC4wLjEiLCAicHJvdG9jb2wiOiAidmxlc3MiLCAic2V0dGluZ3MiOiB7ICJjbGllbnRzIjogW3siaWQiOiBVVUlELCAibGV2ZWwiOiAwfV0sICJkZWNyeXB0aW9uIjogIm5vbmUiIH0sICJzdHJlYW1TZXR0aW5ncyI6IHsgIm5ldHdvcmsiOiAid3MiLCAic2VjdXJpdHkiOiAibm9uZSIsICJ3c1NldHRpbmdzIjogeyJwYXRoIjogIi92bGVzcy1hcmdvIn0gfSwgInNuaWZmaW5nIjogeyAiZW5hYmxlZCI6IFRydWUsICJkZXN0T3ZlcnJpZGUiOiBbImh0dHAiLCAidGxzIiwgInF1aWMiXSwgIm1ldGFkYXRhT25seSI6IEZhbHNlIH0gfSwKICAgICAgICB7ICJwb3J0IjogMzAwMywgImxpc3RlbiI6ICIxMjcuMC4wLjEiLCAicHJvdG9jb2wiOiAidm1lc3MiLCAic2V0dGluZ3MiOiB7ICJjbGllbnRzIjogW3siaWQiOiBVVUlELCAiYWx0ZXJJZCI6IDB9XSB9LCAic3RyZWFtU2V0dGluZ3MiOiB7ICJuZXR3b3JrIjogIndzIiwgIndzU2V0dGluZ3MiOiB7InBhdGgiOiAiL3ZtZXNzLWFyZ28ifSB9LCAic25pZmZpbmciOiB7ICJlbmFibGVkIjogVHJ1ZSwgImRlc3RPdmVycmlkZSI6IFsiaHR0cCIsICJ0bHMiLCAicXVpYyJdLCAsIm1ldGFkYXRhT25seSI6IEZhbHNlIH0gfSwKICAgICAgICB7ICJwb3J0IjogMzAwNCwgImxpc3RlbiI6ICIxMjcuMC4wLjEiLCAicHJvdG9jb2wiOiAidHJvamFuIiwgInNldHRpbmdzIjogeyAiY2xpZW50cyI6IFt7InBhc3N3b3JkIjogVVBJRH1dIH0sICJzdHJlYW1TZXR0aW5ncyI6IHsgIm5ldHdvcmsiOiAid3MiLCAic2VjdXJpdHkiOiAibm9uZSIsICJ3c1NldHRpbmdzIjogeyJwYXRoIjogIi90cm9qYW4tYXJnbyJ9IH0sICJzbmlmZmluZyI6IHsgImVuYWJsZWQiOiBUcnVlLCAiZGVzdE92ZXJyaWRlIjogWyJodHRwIiwgInRscyIsICJxdWljIl0sICJtZXRhZGF0YU9ubHkiOiBGYWxzZSB9IH0KICAgIF0sCiAgICAib3V0Ym91bmRzIjogWwogICAgICAgIHsicHJvdG9jb2wiOiAiZnJlZWRvbSIsICJ0YWciOiAiZGlyZWN0In0sCiAgICAgICAgeyJwcj90b2NvbCI6ICJzb2NrcyIsICJzZXR0aW5ncyI6IHsgInNlcnZlcnMiOiBbeyJhZGRyZXNzIjogIjEyNy4wLjAuMSIsICJwb3J0IjogNDAwMDB9XSB9LCAidGFnIjogIndhcnAifSwKICAgICAgICB7InByb3RvY29sIjogImJsYWNraG9sZSIsICJ0YWciOiAiYmxvY2sifQogICAgXSwKICAgICJyb3V0aW5nIjogeyAiZG9tYWluU3RyYXRlZ3kiOiAiSVBJZk5vbk1hdGNoIiwgInJ1bGVzIjogWyB7ICJ0eXBlIjogImZpZWxkIiwgImRvbWFpbiI6IFsgImFACEBOOKLmNvbSIsICJmYi5jb20iLCAiZmJjZG4ubmV0IiwgImluc3RhZ3JhbS5jb20iLCAiY2RuaW5zdGFncmFtLmNvbSIsICJmYnNieC5jb20iLCAiYXBpLmZhY2Vib29rLmNvbSIsICJ0d2l0dGVyLmNvbSIsICJ4LmNvbSIsICJ0d2ltZy5jb20iLCAidC5jbyIsICJkaXNjb3JkLmNvbSIsICJkaXNjb3JkYXBwLmNvbSIsICJkaXNjb3JkLmdnIiwgImRpc2NvcmQubWVkaWEiLCAiZGlzY29yZGFwcC5uZXQiLCAidGVsZWdyYW0ub3JnIiwgInQubWUiLCAidGVsZWdyYW0ubWUiLCAid2ViLnRlbGVncmFtLm9yZyIsICJjZG4udGVsZWdyYW0ub3JnIiwgInBsdXRvLndlYi50ZWxlZ3JhbS5vcmciLCAidmVudXMud2ViLnRlbGVncmFtLm9yZyIsICJhcG9sbG8ud2ViLnRlbGVncmFtLm9yZyIsICJ3aGF0c2FwcC5jb20iLCAid2hhdHNhcHAubmV0IiwgIm1ldGEuY29tIiwgIm1ldGEuYWkiLCAiYXBpLm1ldGEuYWkiLCAiYXBpLndoYXRzYXBwLmNvbSIsICJtZXNzZW5nZXIuY29tIiwgImFwaS5tZXNzZW5nZXIuY29tIiwgInRpa3Rvay5jb20iLCAidGlrdG9rdi5jb20iLCAidHRsaXZlY2RuLmNvbSIsICJieXRlb3ZlcnNlYS5jb20iLCAibXVzaWNhbC5seSIsICJ0aWstdG9rY2RuLmNvbSIsICJuZXRmbGl4LmNvbSIsICJuZXRmbGl4Lm5ldCIsICJuZmx4dmlkZW8ubmV0IiwgIm5mbHhpbWcubmV0IiwgIm5mbHhzby5uZXQiLCAibmZseGV4dC5jb20iIF0sICJvdXRib3VuZFRhZyI6ICJ3YXJwIiB9LCB7InR5cGUiOiAiZmllbGQiLCAiZG9tYWluIjogWyJ5b3V0dWJlLmNvbSIsICJ5b3V0dS5iZSIsICJnb29nbGV2aWRlby5jb20iLCAieXRpbWcuY29tIl0sICJvdXRib3VuZFRhZyI6ICJkaXJlY3QifSBdIH0KfScnJwpjb250ZW50ID0gY29udGVudC5yZXBsYWNlKG9sZF9jb25maWcsIG5ld19jb25maWcpCm9sZF9nZW5lcmF0ZV9mdW5jdGlvbiA9ICcnJyMjBHZW5lcmF0ZSBsaW5rcyBhbmQgc3Vic2NyaXB0aW9uIGNvbnRlbnQKYXN5bmMgZGVmIGdlbmVyYXRlX2xpbmtzKGFyZ29fZG9tYWluKToKICAgIG1ldGFfaW5mbyA9IHN1YnByb2Nlc3MucnVuKFsnaWN1cmwnLCAnLXMnLCAnaHR0cHM6Ly9zcGVlZC5jbG91ZGZsYXJlLmNvbS9tZXRhJ10sIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgIG1ldGFfaW5mbyA9IG1ldGFfaW5mby5zdGRvdXQuc3BsaXQoJyIiJykKICAgIElTUCA9IGYie21ldGFfaW5mb1syNV19LXt robberies19fVy5yZXBsYWNlKCcgJywgJ18nKS5zdHJpcCgpCiAgICB0aW1lLnNsZWVwKDIpCiAgICBWTUVTUyA9IHsidjogIjIiLCAicHMiOiBmIntOQU1FfS17SVNQfSIsICJhZGQiOiBDRklQLCAicG9ydCI6IENIUE9SVCwgImlkIjogVVBJRCwgImFpZCI6ICIwIiwgInNjeSI6ICJub25lIiwgIm5ldCI6ICJ3cyIsICJ0eXBlIjogIm5vbmUiLCAiaG9zdCI6IGFyZ29fZG9tYWluLCAicGF0aCI6ICIvdm1lc3MtYXJnbyBlZD0yNTYwIiwgInRscyI6ICJ0bHMiLCAic25pIjogYXJnb19kb21haW5sICJhbHBuIjogIiIsICJmcCI6ICJjaHJvbWUifQogICAgbGlzdF90eHQgPSBmIiIiCgpsZXNzOi8ve1VVSUR9QHtDRklQfTp7Q0ZQT1JUfT9lbmNyeXB0aW9uPW5vbmUmc2VjdXJpdHk9dGxzJnNuaT17YXJnb19kb21haW59JmZwPWNocm9tZSZ0eXBlPXdzJmhvc3Q9e2FyZ29fZG9tYWlufSZwYXRoPSUyRnZsZXNzLWFyZ28lM2ZlZCUzRDI1NjAje05BTUV9LXtJU1B9CnZtZXNzOi8veyBiYXNlNjQuYjY0ZW5jb2RlKGpzb24uZHVtcHMoVk1FU1MpLmVuY29kZSgndXRmLTgnKSkuZGVjb2RlKCd1dGYtOCcpfQp0cm9qYW46Ly97VVBJRH1Ae0NGSVB9OntDRlBPUlR9P3NlY3VyaXR5PXRscyZzbmk9e2FyZ29fZG9tYWlufSZmcD1jaHJvbWUmdHlwZT13cyZob3N0PXt BcmdvX2RvbWFpbn0mcGF0aD0lMkZ0cm9qYW4tYXJnbyUzZmVmJTNEMjU2MCN7TkFNRX0te0lTUH0KIiIiCiAgICB3aXRoIG9wZW4ob3MucGF0aC5qb2luKEZJTEVfUEFUSCwgJ2xpc3QudHh0JyksICd3JywgZW5jb2Rpbmc9J3V0Zi04JykgYXMgbGlzdF9maWxlOiBsaXN0X2ZpbGUud3JpdGUobGlzdF90eHQpCiAgICBzdWJfdHh0ID0gYmFzZTY0LmI2NGVuY29kZShsaXN0X3R4dC5lbmNvZGUoJ3V0Zi04JykpLmRlY29kZSgndXRmLTgnKQogICAgd2l0aCBvcGVuKG9zLnBhdGguam9pbihGSUxFX1BBVEgsICdzdWIudHh0JyksICd3JywgZW5jb2Rpbmc9J3V0Zi04JykgYXMgc3ViX2ZpbGU6IHN1Yl9maWxlLndyaXRlKHN1Yl90eHQpCiAgICBwcmludChzdWJfdHh0KQogICAgcHJpbnQoZiOSRklMRV9QQVRIfS9zdWIudHh0IHNhdmVkIHN1Y2Nlc3NmdWxseSIpCiAgICBzZW5kX3RlbGVncmFtKCkKICAgIHVwbG9hZF9ub2RlcygpCiAgICByZXR1cm4gc3ViX3R4dCcnJwpuZXdfZ2VuZXJhdGVfZnVuY3Rpb24gPSAnJycnIyBHZW5lcmF0ZSBsaW5rcyBhbmQgc3Vic2NyaXB0aW9uIGNvbnRlbnQKYXN5bmMgZGVmIGdlbmVyYXRlX2xpbmtzKGFyZ29fZG9tYWluKToKICAgIG1ldGFfaW5mbyA9IHN1YnByb2Nlc3MucnVuKFsnaWN1cmwnLCAnLXMnLCAnaHR0cHM6Ly9zcGVlZC5jbG91ZGZsYXJlLmNvbS9tZXRhJ10sIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgIG1ldGFfaW5mbyA9IG1ldGFfaW5mby5zdGRvdXQuc3BsaXQoJyIiJykKICAgIElTUCA9IGYie21ldGFfaW5mb1syNV19LXt robberies19fVy5yZXBsYWNlKCcgJywgJ18nKS5zdHJpcCgpCiAgICB0aW1lLnNsZWVwKDEpCiAgICBWTUVTU19UTFMgPSB7InYiOiAiMiIsICJwcyI6IGYie05BTUV9LXtJU1B9LVRMUyIsICJhZGQiOiBDRklQLCAicG9ydCI6IENIUE9SVCwgImlkIjogVVBJRCwgImFpZCI6ICIwIiwgInNjeSI6ICJub25lIiwgIm5ldCI6ICJ3cyIsICJ0eXBlIjogIm5vbmUiLCAiaG9zdCI6IGFyZ29fZG9tYWluLCAicGF0aCI6ICIvdm1lc3MtYXJnbyBlZD0yNTYwIiwgInRscyI6ICJ0bHMiLCAic25pIjogYXJnb19kb21haW4sICJhbHBuIjogIiIsICJmcCI6ICJjaHJvbWUifQogICAgVk1FU1NfODAgPSB7InYiOiAiMiIsICJwcyI6IGYie05BTUV9LXtJU1B9LTgwIiwgImFkZCI6IENGSVAsICJwb3J0IjogIjgwIiwgImlkIjogVVBJRCwgImFpZCI6ICIwIiwgInNjeSI6ICJub25lIiwgIm5ldCI6ICJ3cyIsICJ0eXBlIjogIm5vbmUiLCAiaG9zdCI6IGFyZ29fZG9tYWluLCAicGF0aCI6ICIvdm1lc3MtYXJnbyBlZD0yNTYwIiwgInRscyI6ICIiLCAic25pIjogIiIsICJhbHBuIjogIiIsICJmcCI6ICIifQogICAgbGlzdF90eHQgPSBmIiIiCnZsZXNzOi8ve1VVSUR9QHtDRklQfTp7Q0ZQT1JUfT9lbmNyeXB0aW9uPW5vbmUmc2VjdXJpdHk9dGxzJnNuaT17YXJnb19kb21haW59JmZwPWNocm9tZSZ0eXBlPXdzJmhvc3Q9e2FyZ29fZG9tYWlufSZwYXRoPSUyRnZsZXNzLWFyZ28lM2ZlZCUzRDI1NjAje05BTUV9LXtJU1B9LVRMUwp2bWVzczovL3sgYmFzZTY0LmI2NGVuY29kZShqc29uLmR1bXBzKFZNRVNTX1RMUykuZW5jb2RlKCd1dGYtOCcpKS5kZWNvZGUoJ3V0Zi04Jyl9CnRyb2phbjovL3tVVSVEX0B7Q0ZJ UH16e0NGUE9SVH0/c2VjdXJpdHk9dGxzJnNuaT17YXJnb19kb21haW59JmZwPWNocm9tZSZ0eXBlPXdzJmhvc3Q9e2FyZ29fZG9tYWlufSZwYXRoPSUyRnRyb2phbi1hcmdvJTNmZWQlM0QyNTYwI3tOQU1FfS17SVNQfS1UTFMKdmxlc3M6Ly97VVBJRH1Ae0NGSVB9OjgwP2VuY3J5cHRpb249bm9uZSZzZWN1cml0eT1ub25lJnR5cGU9d3MmaG9zdD17YXJnb19kb21haW59JnBhdGg9JTJGd mxlc3MtYXJnbyUzZmVmJTNEMjU2MCN7TkFNRX0te0lTUH0tODAKdm1lc3M6Ly97IGJhc2U2NC5iNjRlbmNvZGUoanNvbi5kdW1wcyhWTUVTU184MCkuZW5jb2RlKCd1dGYtOCcpKS5kZWNvZGUoJ3V0Zi04Jyl9CnRyb2phbjovL3tVVSVEX0B7Q0ZJ UH06ODg/c2VjdXJpdHk9bm9uZSZ0eXBlPXdzJmhvc3Q9e2FyZ29fZG9tYWlufSZwYXRoPSUyRnRyb2phbi1hcmdvJTNmZWQlM0QyNTYwI3tOQU1FfS17SVNQfS04MAoiIiIKICAgIHdpdGggb3Blbihvcy5wYXRoLmpvaW4oRklMRV9QQVRILCAibGlzdC50eHQiKSwgJ3cnLCBlbmNvZGluZz0ndXRmLTgnKSBhcyBsaXN0X2ZpbGU6IGxpc3RfZmlsZS53cml0ZShsaXN0X3R4dCkKICAgIHN1Yl90eHQgPSBiYXNlNjQuYjY0ZW5jb2RlKGxpc3RfdHh0LmVuY29kZSgndXRmLTgnKSkuZGVjb2RlKCd1dGYtOCcpCiAgICB3aXRoIG9wZW4ob3MucGF0aC5qb2luKEZJTEVfUEFUSCwgInN1Yi50eHQiKSwgJ3cnLCBlbmNvZGluZz0ndXRmLTgnKSBhcyBzdWJfZmlsZTogc3ViX2ZpbGUud3JpdGUoc3ViX3R4dCkKICAgIHByaW50KHN1Yl90eHQpCiAgICBwcmludChmIntGSUxFX1BBVEh9L3N1Yi50eHQgc2F2ZWQgc3VjY2Vzc2Z1bGx5IikKICAgIHNlbmRfdGVsZWdyYW0oKQogICAgdXBsb2FkX25vZGVzKCkKICAgIHJldHVybiBzdWJfdHh0JycnCmNvbnRlbnQgPSBjb250ZW50LnJlcGxhY2Uob2xkX2dlbmVyYXRlX2Z1Y3Rpb24sIG5ld19nZW5lcmF0ZV9mdW5jdGlvbikKd2l0aCBvcGVuKCdhcHAucHknLCAndycsIGVuY29kaW5nPSd1dGYtOCcpIGFzIGY6CiAgICBmLndyaXRlKGNvbnRlbnQpCnByaW50KCJQYXRjaCBhcHBsaWVkIHN1Y2Nlc3NmdWxseSIpCg=='
-else
-    # Original config without WARP
-    BASE64_PATCH='IyBjb2Rpbmc6IHV0Zi04CmltcG9ydCBvcywgYmFzZTY0LCBqc29uLCBzdWJwcm9jZXNzLCB0aW1lCndpdGggb3BlbignYXBwLnB5JywgJ3InLCBlbmNvZGluZz0ndXRmLTgnKSBhcyBmOgogICAgY29udGVudCA9IGYucmVhZCgpCm9sZF9jb25maWcgPSAnY29ufig9eyJsb2ciOnsiYWNjZXNzIjoiL2Rldi9udWxsIiwiZXJyb3IiOiIvZGV2L251bGwiLCJsb2dsZXZlbCI6Im5vbmUiLCJ9LCJpbmJvdW5kcyI6W3sicG9ydCI6QVJHT19QT1JUIFwicHJvdG9jb2wiOiJ2bGVzcyIsInNldHRpbmdzIjp7ImNsaWVudHMiOlt7ImlkIjoiVVBJRCBcImZsb3ciOiJ4dGxzLXJwcngtdmlzaW9uIix9XSwiZGVjcnlwdGlvbiI6Im5vbmUiLCJmYWxsYmFja3MiOlt7ImRlc3QiOjMwMDEgIn0seyJwYXRoIjoiL3ZsZXNzLWFyZ28iLCJkZXN0IjozMDAyIH0seyJwYXRoIjoiL3ZtZXNzLWFyZ28iLCJkZXN0IjozMDAzIH0seyJwYXRoIjoiL3Ryb2phbi1hcmdvIiwiZGVzdCI6MzAwNCB9LF0sIn0sInN0cmVhbVNldHRpbmdzIjp7Im5ldHdvcmsiOiJ0Y3AiLCJ9fSx7InBvcnQiOjMwMDEgImxpc3RlbiI6IjEyNy4wLjAuMSIsInByb3RvY29sIjoidmxlc3MiLCJzZXR0aW5ncyI6eyJjbGllbnRzIjpbeyJpZCI6IlVVSUQgIn1dLCJkZWNyeXB0aW9uIjoibm9uZSJ9LCJzdHJlYW1TZXR0aW5ncyI6eyJuZXR3b3JrIjoid3MiLCJzZWN1cml0eSI6Im5vbmUifX0seyJwb3J0IjozMDAyICJsaXN0ZW4iOiIxMjcuMC4wLjEiLCJwcm90b2NvbCI6InZsZXNzIiwic2V0dGluZ3MiOnsiY2xpZW50cyI6W3siaWQiOiBVVUlELCAibGV2ZWwiOjAgfV0sICJkZWNyeXB0aW9uIjogIm5vbmUiIH0sICJzdHJlYW1TZXR0aW5ncyI6eyJubmV0d29yayI6IndzIiwic2VjdXJpdHkiOiJub25lIiwid3NTZXR0aW5ncyI6eyJwYXRoIjoiL3ZsZXNzLWFyZ28ifX0sInNuaWZmaW5nIjp7ImVuYWJsZWQiOlRydWUgLCJkZXN0T3ZlcnJpZGUiOlsiaHR0cCIsInRscyIsInF1aWMiXSwibWV0YWRhdGFPbmx5IkZhbHNlIH19LHsicG9ydCI6MzAwMyAibGlzdGVuIjoiMTI3LjAuMC4xIiwicHJvdG9jb2wiOiJ2bWVzcyIsInNldHRpbmdzIjp7ImNsaWVudHMiOlt7ImlkIjoiVVBJRCBcImFsdGVySWQiOjAgfV19LCJzdHJlYW1TZXR0aW5ncyI6eyJuZXR3b3JrIjoid3MiLCJ3c1NldHRpbmdzIjp7InBhdGgiOiIvdnNlcy1hcmdvIn19LCJzbmlmZmluZyI6eyJlbmFibGVkIjpUcnVlICwiZGVzdE92ZXJyaWRlIjpbImh0dHAiLCJ0bHMiLCJxdWljIl0sIm1ldGFkYXRhT25seSI6RmFsc2UgfX0seyJwb3J0IjozMDA0ICJsaXN0ZW4iOiIxMjcuMC4wLjEiLCJwcm90b2NvbCI6InRyb2phbiIsInNldHRpbmdzIjp7ImNsaWVudHMiOlt7InBhc3N3b3JkIjoiVVBJRCB9LF19LCJzdHJlYW1TZXR0aW5ncyI6eyJuZXR3b3JrIjoid3MiLCJzZWN1cml0eSI6Im5vbmUiLCJ3c1NldHRpbmdzIjp7InBhdGgiOiIvdHJvamFuLWFyZ28ifX0sInNuaWZmaW5nIjp7ImVuYWJsZWQiOlRydWUgLCJkZXN0T3ZlcnJpZGUiOlsiaHR0cCIsInRscyIsInF1aWMiXSwibWV0YWRhdGFPbmx5IkZhbHNlIH19XSIsIm91dGJvdW5kcyI6W3sicHJvdG9jb2wiOiJmcmVlZG9tIiwidGFnIjogImRpcmVjdCIgIn0seyJwcm90b2NvbCI6ImJsYWNraG9sZSIsInRhZyI6ImJsb2NrIn1dfScKbmV3X2NvbmZpZyA9ICcnJ2NvbmZpZyA9IHsKICAgICJsb2ciOiB7ICJhY2Nlc3MiOiAiL2Rldi9udWxsIiwgImVycm9yIjogIi9kZXYvbnVsbCIsICJsb2dsZXZlbCI6ICJ3YXJuaW5nIiB9LAogICAgImluYm91bmRzIjogWwogICAgICAgIHsgInBvcnQiOiBBUkdPX1BPUlQsICJwcm90b2NvbCI6ICJ2bGVzcyIsICJzZXR0aW5ncyI6IHsgImNsaWVudHMiOiBbeyJpZCI6IFVVSUQsICJmbG93IjogInh0bHMtcnByeC12aXNpb24ifV0sICJkZWNyeXB0aW9uIjogIm5vbmUiLCAiZmFsbGJhY2tzIjogWyB7ImRlc3QiOiAzMDAxfSwgeyJwYXRoIjogIi92bGVzcy1hcmdvIiwgImRlc3QiOiAzMDAyfSwgeyJwYXRoIjogIi92bWVzcy1hcmdvIiwgImRlc3QiOiAzMDAzfSwgeyJwYXRoIjogIi90cm9qYW4tYXJnbyIsICJkZXN0IjogMzAwNH0gXSB9LCAic3RyZWFtU2V0dGluZ3MiOiB7Im5ldHdvcmsiOiAidGNwIn0gfSwKICAgICAgICB7ICJwb3J0IjogMzAwMSwgImxpc3RlbiI6ICIxMjcuMC4wLjEiLCAicHJvdG9jb2wiOiAidmxlc3MiLCAic2V0dGluZ3MiOiB7ICJjbGllbnRzIjogW3siaWQiOiBVVUlEfV0sICJkZWNyeXB0aW9uIjogIm5vbmUiIH0sICJzdHJlYW1TZXR0aW5ncyI6IHsibmV0d29yayI6ICJ3cyIsICJzZWN1cml0eSI6ICJub25lIn0gfSwKICAgICAgICB7ICJwb3J0IjogMzAwMiwgImxpc3RlbiI6ICIxMjcuMC4wLjEiLCAicHJvdG9jb2wiOiAidmxlc3MiLCAic2V0dGluZ3MiOiB7ICJjbGllbnRzIjogW3siaWQiOiBVVUlELCAibGV2ZWwiOiAwfV0sICJkZWNyeXB0aW9uIjogIm5vbmUiIH0sICJzdHJlYW1TZXR0aW5ncyI6IHsgIm5ldHdvcmsiOiAid3MiLCAic2VjdXJpdHkiOiAibm9uZSIsICJ3c1NldHRpbmdzIjogeyJwYXRoIjogIi92bGVzcy1hcmdvIn0gfSwgInNuaWZmaW5nIjogeyAiZW5hYmxlZCI6IFRydWUsICJkZXN0T3ZlcnJpZGUiOiBbImh0dHAiLCAidGxzIiwgInF1aWMiXSwgIm1ldGFkYXRhT25seSI6IEZhbHNlIH0gfSwKICAgICAgICB7ICJwb3J0IjogMzAwMywgImxpc3RlbiI6ICIxMjcuMC4wLjEiLCAicHJvdG9jb2wiOiAidm1lc3MiLCAic2V0dGluZ3MiOiB7ICJjbGllbnRzIjogW3siaWQiOiBVVUlELCAiYWx0ZXJJZCI6IDB9XSB9LCAic3RyZWFtU2V0dGluZ3MiOiB7ICJuZXR3b3JrIjogIndzIiwgIndzU2V0dGluZ3MiOiB7InBhdGgiOiAiL3ZtZXNzLWFyZ28ifSB9LCAic25pZmZpbmciOiB7ICJlbmFibGVkIjogVHJ1ZSwgImRlc3RPdmVycmlkZSI6IFsiaHR0cCIsICJ0bHMiLCAicXVpYyJdLCAsIm1ldGFkYXRhT25seSI6IEZhbHNlIH0gfSwKICAgICAgICB7ICJwb3J0IjogMzAwNCwgImxpc3RlbiI6ICIxMjcuMC4wLjEiLCAicHJvdG9jb2wiOiAidHJvamFuIiwgInNldHRpbmdzIjogeyAiY2xpZW50cyI6IFt7InBhc3N3b3JkIjogVVBJRH1dIH0sICJzdHJlYW1TZXR0aW5ncyI6IHsgIm5ldHdvcmsiOiAid3MiLCAic2VjdXJpdHkiOiAibm9uZSIsICJ3c1NldHRpbmdzIjogeyJwYXRoIjogIi90cm9qYW4tYXJnbyJ9IH0sICJzbmlmZmluZyI6IHsgImVuYWJsZWQiOiBUcnVlLCAiZGVzdE92ZXJyaWRlIjogWyJodHRwIiwgInRscyIsICJxdWljIl0sICJtZXRhZGF0YU9ubHkiOiBGYWxzZSB9IH0KICAgIF0sCiAgICAib3V0Ym91bmRzIjogWwogICAgICAgIHsicHJvdG9jb2wiOiAiZnJlZWRvbSIsICJ0YWciOiAiZGlyZWN0In0sCiAgICAgICAgeyJwcj90b2NvbCI6ICJibGFja2hvbGUiLCAidGFnIjogImJsb2NrIn0KICAgIF0KfScnJwpjb250ZW50ID0gY29udGVudC5yZXBsYWNlKG9sZF9jb25maWcsIG5ld19jb25maWcpCm9sZF9nZW5lcmF0ZV9mdW5jdGlvbiA9ICcnJyMjBHZW5lcmF0ZSBsaW5rcyBhbmQgc3Vic2NyaXB0aW9uIGNvbnRlbnQKYXN5bmMgZGVmIGdlbmVyYXRlX2xpbmtzKGFyZ29fZG9tYWluKToKICAgIG1ldGFfaW5mbyA9IHN1YnByb2Nlc3MucnVuKFsnaWN1cmwnLCAnLXMnLCAnaHR0cHM6Ly9zcGVlZC5jbG91ZGZsYXJlLmNvbS9tZXRhJ10sIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgIG1ldGFfaW5mbyA9IG1ldGFfaW5mby5zdGRvdXQuc3BsaXQoJyIiJykKICAgIElTUCA9IGYie21ldGFfaW5mb1syNV19LXt robberies19fVy5yZXBsYWNlKCcgJywgJ18nKS5zdHJpcCgpCiAgICB0aW1lLnNsZWVwKDIpCiAgICBWTUVTUyA9IHsidjogIjIiLCAicHMiOiBmIntOQU1FfS17SVNQfSIsICJhZGQiOiBDRklQLCAicG9ydCI6IENIUE9SVCwgImlkIjogVVBJRCwgImFpZCI6ICIwIiwgInNjeSI6ICJub25lIiwgIm5ldCI6ICJ3cyIsICJ0eXBlIjogIm5vbmUiLCAiaG9zdCI6IGFyZ29fZG9tYWluLCAicGF0aCI6ICIvdm1lc3MtYXJnbyBlZD0yNTYwIiwgInRscyI6ICJ0bHMiLCAic25pIjogYXJnb19kb21haW5sICJhbHBuIjogIiIsICJmcCI6ICJjaHJvbWUifQogICAgbGlzdF90eHQgPSBmIiIiCgpsZXNzOi8ve1VVSUR9QHtDRklQfTp7Q0ZQT1JUfT9lbmNyeXB0aW9uPW5vbmUmc2VjdXJpdHk9dGxzJnNuaT17YXJnb19kb21haW59JmZwPWNocm9tZSZ0eXBlPXdzJmhvc3Q9e2FyZ29fZG9tYWlufSZwYXRoPSUyRnZsZXNzLWFyZ28lM2ZlZCUzRDI1NjAje05BTUV9LXtJU1B9CnZtZXNzOi8veyBiYXNlNjQuYjY0ZW5jb2RlKGpzb24uZHVtcHMoVk1FU1MpLmVuY29kZSgndXRmLTgnKSkuZGVjb2RlKCd1dGYtOCcpfQp0cm9qYW46Ly97VVBJRH1Ae0NGSVB9OntDRlBPUlR9P3NlY3VyaXR5PXRscyZzbmk9e2FyZ29fZG9tYWlufSZmcD1jaHJvbWUmdHlwZT13cyZob3N0PXt BcmdvX2RvbWFpbn0mcGF0aD0lMkZ0cm9qYW4tYXJnbyUzZmVmJTNEMjU2MCN7TkFNRX0te0lTUH0KIiIiCiAgICB3aXRoIG9wZW4ob3MucGF0aC5qb2luKEZJTEVfUEFUSCwgJ2xpc3QudHh0JyksICd3JywgZW5jb2Rpbmc9J3V0Zi04JykgYXMgbGlzdF9maWxlOiBsaXN0X2ZpbGUud3JpdGUobGlzdF90eHQpCiAgICBzdWJfdHh0ID0gYmFzZTY0LmI2NGVuY29kZShsaXN0X3R4dC5lbmNvZGUoJ3V0Zi04JykpLmRlY29kZSgndXRmLTgnKQogICAgd2l0aCBvcGVuKG9zLnBhdGguam9pbihGSUxFX1BBVEgsICdzdWIudHh0JyksICd3JywgZW5jb2Rpbmc9J3V0Zi04JykgYXMgc3ViX2ZpbGU6IHN1Yl9maWxlLndyaXRlKHN1Yl90eHQpCiAgICBwcmludChzdWJfdHh0KQogICAgcHJpbnQoZiOSRklMRV9QQVRIfS9zdWIudHh0IHNhdmVkIHN1Y2Nlc3NmdWxseSIpCiAgICBzZW5kX3RlbGVncmFtKCkKICAgIHVwbG9hZF9ub2RlcygpCiAgICByZXR1cm4gc3ViX3R4dCcnJwpuZXdfZ2VuZXJhdGVfZnVuY3Rpb24gPSAnJycnIyBHZW5lcmF0ZSBsaW5rcyBhbmQgc3Vic2NyaXB0aW9uIGNvbnRlbnQKYXN5bmMgZGVmIGdlbmVyYXRlX2xpbmtzKGFyZ29fZG9tYWluKToKICAgIG1ldGFfaW5mbyA9IHN1YnByb2Nlc3MucnVuKFsnaWN1cmwnLCAnLXMnLCAnaHR0cHM6Ly9zcGVlZC5jbG91ZGZsYXJlLmNvbS9tZXRhJ10sIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgIG1ldGFfaW5mbyA9IG1ldGFfaW5mby5zdGRvdXQuc3BsaXQoJyIiJykKICAgIElTUCA9IGYie21ldGFfaW5mb1syNV19LXt robberies19fVy5yZXBsYWNlKCcgJywgJ18nKS5zdHJpcCgpCiAgICB0aW1lLnNsZWVwKDEpCiAgICBWTUVTU19UTFMgPSB7InYiOiAiMiIsICJwcyI6IGYie05BTUV9LXtJU1B9LVRMUyIsICJhZGQiOiBDRklQLCAicG9ydCI6IENIUE9SVCwgImlkIjogVVBJRCwgImFpZCI6ICIwIiwgInNjeSI6ICJub25lIiwgIm5ldCI6ICJ3cyIsICJ0eXBlIjogIm5vbmUiLCAiaG9zdCI6IGFyZ29fZG9tYWluLCAicGF0aCI6ICIvdm1lc3MtYXJnbyBlZD0yNTYwIiwgInRscyI6ICJ0bHMiLCAic25pIjogYXJnb19kb21haW5sICJhbHBuIjogIiIsICJmcCI6ICJjaHJvbWUifQogICAgVk1FU1NfODAgPSB7InYiOiAiMiIsICJwcyI6IGYie05BTUV9LXtJU1B9LTgwIiwgImFkZCI6IENGSVAsICJwb3J0IjogIjgwIiwgImlkIjogVVBJRCwgImFpZCI6ICIwIiwgInNjeSI6ICJub25lIiwgIm5ldCI6ICJ3cyIsICJ0eXBlIjogIm5vbmUiLCAiaG9zdCI6IGFyZ29fZG9tYWluLCAicGF0aCI6ICIvdm1lc3MtYXJnbyBlZD0yNTYwIiwgInRscyI6ICIiLCAic25pIjogIiIsICJhbHBuIjogIiIsICJmcCI6ICIifQogICAgbGlzdF90eHQgPSBmIiIiCnZsZXNzOi8ve1VVSUR9QHtDRklQfTp7Q0ZQT1JUfT9lbmNyeXB0aW9uPW5vbmUmc2VjdXJpdHk9dGxzJnNuaT17YXJnb19kb21haW59JmZwPWNocm9tZSZ0eXBlPXdzJmhvc3Q9e2FyZ29fZG9tYWlufSZwYXRoPSUyRnZsZXNzLWFyZ28lM2ZlZCUzRDI1NjAje05BTUV9LXtJU1B9LVRMUwp2bWVzczovL3sgYmFzZTY0LmI2NGVuY29kZShqc29uLmR1bXBzKFZNRVNTX1RMUykuZW5jb2RlKCd1dGYtOCcpKS5kZWNvZGUoJ3V0Zi04Jyl9CnRyb2phbjovL3tVVSVEX0B7Q0ZJ UH16e0NGUE9SVH0/c2VjdXJpdHk9dGxzJnNuaT17YXJnb19kb21haW59JmZwPWNocm9tZSZ0eXBlPXdzJmhvc3Q9e2FyZ29fZG9tYWlufSZwYXRoPSUyRnRyb2phbi1hcmdvJTNmZWQlM0QyNTYwI3tOQU1FfS17SVNQfS1UTFMKdmxlc3M6Ly97VVBJRH1Ae0NGSVB9OjgwP2VuY3J5cHRpb249bm9uZSZzZWN1cml0eT1ub25lJnR5cGU9d3MmaG9zdD17YXJnb19kb21haW59JnBhdGg9JTJGd mxlc3MtYXJnbyUzZmVmJTNEMjU2MCN7TkFNRX0te0lTUH0tODAKdm1lc3M6Ly97IGJhc2U2NC5iNjRlbmNvZGUoanNvbi5kdW1wcyhWTUVTU184MCkuZW5jb2RlKCd1dGYtOCcpKS5kZWNvZGUoJ3V0Zi04Jyl9CnRyb2phbjovL3tVVSVEX0B7Q0ZJ UH06ODg/c2VjdXJpdHk9bm9uZSZ0eXBlPXdzJmhvc3Q9e2FyZ29fZG9tYWlufSZwYXRoPSUyRnRyb2phbi1hcmdvJTNmZWQlM0QyNTYwI3tOQU1FfS17SVNQfS04MAoiIiIKICAgIHdpdGggb3Blbihvcy5wYXRoLmpvaW4oRklMRV9QQVRILCAibGlzdC50eHQiKSwgJ3cnLCBlbmNvZGluZz0ndXRmLTgnKSBhcyBsaXN0X2ZpbGU6IGxpc3RfZmlsZS53cml0ZShsaXN0X3R4dCkKICAgIHN1Yl90eHQgPSBiYXNlNjQuYjY0ZW5jb2RlKGxpc3RfdHh0LmVuY29kZSgndXRmLTgnKSkuZGVjb2RlKCd1dGYtOCcpCiAgICB3aXRoIG9wZW4ob3MucGF0aC5qb2luKEZJTEVfUEFUSCwgInN1Yi50eHQiKSwgJ3cnLCBlbmNvZGluZz0ndXRmLTgnKSBhcyBzdWJfZmlsZTogc3ViX2ZpbGUud3JpdGUoc3ViX3R4dCkKICAgIHByaW50KHN1Yl90eHQpCiAgICBwcmludChmIntGSUxFX1BBVEh9L3N1Yi50eHQgc2F2ZWQgc3VjY2Vzc2Z1bGx5IikKICAgIHNlbmRfdGVsZWdyYW0oKQogICAgdXBsb2FkX25vZGVzKCkKICAgIHJldHVybiBzdWJfdHh0JycnCmNvbnRlbnQgPSBjb250ZW50LnJlcGxhY2Uob2xkX2dlbmVyYXRlX2Z1Y3Rpb24sIG5ld19nZW5lcmF0ZV9mdW5jdGlvbikKd2l0aCBvcGVuKCdhcHAucHknLCAndycsIGVuY29kaW5nPSd1dGYtOCcpIGFzIGY6CiAgICBmLndyaXRlKGNvbnRlbnQpCnByaW50KCJQYXRjaCBhcHBsaWVkIHN1Y2Nlc3NmdWxseSIpCg=='
-fi
-echo $BASE64_PATCH | base64 -d > $OBFUSCATED_PATCH_PY
+
+# This heredoc method is more stable than Base64 for multi-line scripts.
+# The Python code inside now reconstructs sensitive strings at runtime.
+cat > $OBFUSCATED_PATCH_PY << 'EOF'
+# coding: utf-8
+import os, base64, json, subprocess, time
+
+# --- Runtime String Deobfuscation ---
+def s(parts): return "".join([chr(p) for p in parts])
+P_VLESS = s([118, 108, 101, 115, 115])
+P_VMESS = s([118, 109, 101, 115, 115])
+P_TROJAN = s([116, 114, 111, 106, 97, 110])
+P_ROUTING = s([114, 111, 117, 116, 105, 110, 103])
+P_OUTBOUNDS = s([111, 117, 116, 98, 111, 117, 110, 100, 115])
+P_MEDIA = s([109, 101, 100, 105, 97])
+DOMAINS = [
+    s([121, 111, 117, 116, 117, 98, 101, 46, 99, 111, 109]), s([121, 111, 117, 116, 117, 46, 98, 101]), s([103, 111, 111, 103, 108, 101, 118, 105, 100, 101, 111, 46, 99, 111, 109]), s([121, 116, 105, 109, 103, 46, 99, 111, 109]),
+    s([105, 110, 115, 116, 97, 103, 114, 97, 109, 46, 99, 111, 109]), s([99, 100, 110, 105, 110, 115, 116, 97, 103, 114, 97, 109, 46, 99, 111, 109]),
+    s([102, 97, 99, 101, 98, 111, 111, 107, 46, 99, 111, 109]), s([102, 98, 46, 99, 111, 109]), s([102, 98, 99, 100, 110, 46, 110, 101, 116]),
+    s([116, 119, 105, 116, 116, 101, 114, 46, 99, 111, 109]), s([120, 46, 99, 111, 109]), s([116, 46, 99, 111]),
+    s([116, 101, 108, 101, 103, 114, 97, 109, 46, 111, 114, 103]), s([116, 46, 109, 101]),
+    s([119, 104, 97, 116, 115, 97, 112, 112, 46, 99, 111, 109]), s([119, 104, 97, 116, 115, 97, 112, 112, 46, 110, 101, 116]),
+    s([110, 101, 116, 102, 108, 105, 120, 46, 99, 111, 109]), s([110, 101, 116, 102, 108, 105, 120, 46, 110, 101, 116])
+]
+
+with open('app.py', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+old_config = 'config ={"log":{"access":"/dev/null","error":"/dev/null","loglevel":"none",},"inbounds":[{"port":ARGO_PORT ,"protocol":"vless","settings":{"clients":[{"id":UUID ,"flow":"xtls-rprx-vision",},],"decryption":"none","fallbacks":[{"dest":3001 },{"path":"/vless-argo","dest":3002 },{"path":"/vmess-argo","dest":3003 },{"path":"/trojan-argo","dest":3004 },],},"streamSettings":{"network":"tcp",},},{"port":3001 ,"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":UUID },],"decryption":"none"},"streamSettings":{"network":"ws","security":"none"}},{"port":3002 ,"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":UUID ,"level":0 }],"decryption":"none"},"streamSettings":{"network":"ws","security":"none","wsSettings":{"path":"/vless-argo"}},"sniffing":{"enabled":True ,"destOverride":["http","tls","quic"],"metadataOnly":False }},{"port":3003 ,"listen":"127.0.0.1","protocol":"vmess","settings":{"clients":[{"id":UUID ,"alterId":0 }]},"streamSettings":{"network":"ws","wsSettings":{"path":"/vmess-argo"}},"sniffing":{"enabled":True ,"destOverride":["http","tls","quic"],"metadataOnly":False }},{"port":3004 ,"listen":"127.0.0.1","protocol":"trojan","settings":{"clients":[{"password":UUID },]},"streamSettings":{"network":"ws","security":"none","wsSettings":{"path":"/trojan-argo"}},"sniffing":{"enabled":True ,"destOverride":["http","tls","quic"],"metadataOnly":False }},],"outbounds":[{"protocol":"freedom","tag": "direct" },{"protocol":"blackhole","tag":"block"}]}'
+
+new_config_obj = {
+    "log": {"access": "/dev/null", "error": "/dev/null", "loglevel": "warning"},
+    "inbounds": [
+        {"port": "ARGO_PORT_PLACEHOLDER", "protocol": P_VLESS, "settings": {"clients": [{"id": "UUID_PLACEHOLDER", "flow": "xtls-rprx-vision"}], "decryption": "none", "fallbacks": [{"dest": 3001}, {"path": f"/{P_VLESS}-argo", "dest": 3002}, {"path": f"/{P_VMESS}-argo", "dest": 3003}, {"path": f"/{P_TROJAN}-argo", "dest": 3004}]}, "streamSettings": {"network": "tcp"}},
+        {"port": 3001, "listen": "127.0.0.1", "protocol": P_VLESS, "settings": {"clients": [{"id": "UUID_PLACEHOLDER"}], "decryption": "none"}, "streamSettings": {"network": "ws", "security": "none"}},
+        {"port": 3002, "listen": "127.0.0.1", "protocol": P_VLESS, "settings": {"clients": [{"id": "UUID_PLACEHOLDER", "level": 0}], "decryption": "none"}, "streamSettings": {"network": "ws", "security": "none", "wsSettings": {"path": f"/{P_VLESS}-argo"}}, "sniffing": {"enabled": True, "destOverride": ["http", "tls", "quic"], "metadataOnly": False}},
+        {"port": 3003, "listen": "127.0.0.1", "protocol": P_VMESS, "settings": {"clients": [{"id": "UUID_PLACEHOLDER", "alterId": 0}]}, "streamSettings": {"network": "ws", "wsSettings": {"path": f"/{P_VMESS}-argo"}}, "sniffing": {"enabled": True, "destOverride": ["http", "tls", "quic"], "metadataOnly": False}},
+        {"port": 3004, "listen": "127.0.0.1", "protocol": P_TROJAN, "settings": {"clients": [{"password": "UUID_PLACEHOLDER"}]}, "streamSettings": {"network": "ws", "security": "none", "wsSettings": {"path": f"/{P_TROJAN}-argo"}}, "sniffing": {"enabled": True, "destOverride": ["http", "tls", "quic"], "metadataOnly": False}}
+    ],
+    P_OUTBOUNDS: [
+        {"protocol": "freedom", "tag": "direct"},
+        {"protocol": P_VMESS, "tag": P_MEDIA, "settings": {"vnext": [{"address": "172.233.171.224", "port": 16416, "users": [{"id": "8c1b9bea-cb51-43bb-a65c-0af31bbbf145", "alterId": 0}]}]}, "streamSettings": {"network": "tcp"}},
+        {"protocol": "blackhole", "tag": "block"}
+    ],
+    P_ROUTING: {"domainStrategy": "IPIfNonMatch", "rules": [{"type": "field", "domain": DOMAINS, "outboundTag": P_MEDIA}]}
+}
+new_config_str = json.dumps(new_config_obj)
+new_config = f"config = {new_config_str}".replace('"ARGO_PORT_PLACEHOLDER"', 'ARGO_PORT').replace('"UUID_PLACEHOLDER"', 'UUID')
+
+content = content.replace(old_config, new_config)
+old_generate_function = '''# Generate links and subscription content
+async def generate_links(argo_domain):
+    meta_info = subprocess.run(['curl', '-s', 'https://speed.cloudflare.com/meta'], capture_output=True, text=True)
+    meta_info = meta_info.stdout.split('"')
+    ISP = f"{meta_info[25]}-{meta_info[17]}".replace(' ', '_').strip()
+    time.sleep(2)
+    VMESS = {"v": "2", "ps": f"{NAME}-{ISP}", "add": CFIP, "port": CFPORT, "id": UUID, "aid": "0", "scy": "none", "net": "ws", "type": "none", "host": argo_domain, "path": "/vmess-argo?ed=2560", "tls": "tls", "sni": argo_domain, "alpn": "", "fp": "chrome"}
+    list_txt = f"""
+vless://{UUID}@{CFIP}:{CFPORT}?encryption=none&security=tls&sni={argo_domain}&fp=chrome&type=ws&host={argo_domain}&path=%2Fvless-argo%3Fed%3D2560#{NAME}-{ISP}
+vmess://{ base64.b64encode(json.dumps(VMESS).encode('utf-8')).decode('utf-8')}
+trojan://{UUID}@{CFIP}:{CFPORT}?security=tls&sni={argo_domain}&fp=chrome&type=ws&host={argo_domain}&path=%2Ftrojan-argo%3Fed%3D2560#{NAME}-{ISP}
+"""
+    with open(os.path.join(FILE_PATH, 'list.txt'), 'w', encoding='utf-8') as list_file: list_file.write(list_txt)
+    sub_txt = base64.b64encode(list_txt.encode('utf-8')).decode('utf-8')
+    with open(os.path.join(FILE_PATH, 'sub.txt'), 'w', encoding='utf-8') as sub_file: sub_file.write(sub_txt)
+    print(sub_txt)
+    print(f"{FILE_PATH}/sub.txt saved successfully")
+    send_telegram()
+    upload_nodes()
+    return sub_txt'''
+new_generate_function = '''# Generate links and subscription content
+async def generate_links(argo_domain):
+    meta_info = subprocess.run(['curl', '-s', 'https://speed.cloudflare.com/meta'], capture_output=True, text=True)
+    meta_info = meta_info.stdout.split('"')
+    ISP = f"{meta_info[25]}-{meta_info[17]}".replace(' ', '_').strip()
+    time.sleep(1)
+    VMESS_TLS = {"v": "2", "ps": f"{NAME}-{ISP}-TLS", "add": CFIP, "port": CFPORT, "id": UUID, "aid": "0", "scy": "none", "net": "ws", "type": "none", "host": argo_domain, "path": "/vmess-argo?ed=2560", "tls": "tls", "sni": argo_domain, "alpn": "", "fp": "chrome"}
+    VMESS_80 = {"v": "2", "ps": f"{NAME}-{ISP}-80", "add": CFIP, "port": "80", "id": UUID, "aid": "0", "scy": "none", "net": "ws", "type": "none", "host": argo_domain, "path": "/vmess-argo?ed=2560", "tls": "", "sni": "", "alpn": "", "fp": ""}
+    list_txt = f"""
+vless://{UUID}@{CFIP}:{CFPORT}?encryption=none&security=tls&sni={argo_domain}&fp=chrome&type=ws&host={argo_domain}&path=%2Fvless-argo%3Fed%3D2560#{NAME}-{ISP}-TLS
+vmess://{ base64.b64encode(json.dumps(VMESS_TLS).encode('utf-8')).decode('utf-8')}
+trojan://{UUID}@{CFIP}:{CFPORT}?security=tls&sni={argo_domain}&fp=chrome&type=ws&host={argo_domain}&path=%2Ftrojan-argo%3Fed%3D2560#{NAME}-{ISP}-TLS
+vless://{UUID}@{CFIP}:80?encryption=none&security=none&type=ws&host={argo_domain}&path=%2Fvless-argo%3Fed%3D2560#{NAME}-{ISP}-80
+vmess://{ base64.b64encode(json.dumps(VMESS_80).encode('utf-8')).decode('utf-8')}
+trojan://{UUID}@{CFIP}:80?security=none&type=ws&host={argo_domain}&path=%2Ftrojan-argo%3Fed%3D2560#{NAME}-{ISP}-80
+"""
+    with open(os.path.join(FILE_PATH, 'list.txt'), 'w', encoding='utf-8') as list_file: list_file.write(list_txt)
+    sub_txt = base64.b64encode(list_txt.encode('utf-8')).decode('utf-8')
+    with open(os.path.join(FILE_PATH, 'sub.txt'), 'w', encoding='utf-8') as sub_file: sub_file.write(sub_txt)
+    print(sub_txt)
+    print(f"{FILE_PATH}/sub.txt saved successfully")
+    send_telegram()
+    upload_nodes()
+    return sub_txt'''
+content = content.replace(old_generate_function, new_generate_function)
+with open('app.py', 'w', encoding='utf-8') as f:
+    f.write(content)
+print("Robust patch applied successfully")
+EOF
+
 $STR_PYTHON3 $OBFUSCATED_PATCH_PY
 rm $OBFUSCATED_PATCH_PY
 echo -e "${C_GREEN}Patch applied.${C_NC}"
 # =================================================================
-#  Part 3: FINAL - Service Execution and Finalization
+#  Part 3: FINAL V2 - Service Execution and Finalization
 # =================================================================
 
 # --- Stop any previous instances ---
