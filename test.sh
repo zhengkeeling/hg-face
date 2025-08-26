@@ -127,7 +127,7 @@ configure_hf_keep_alive() {
     echo -e "${GREEN}成功从 Space secrets 读取令牌！${NC}"
     
     # 2. 更新仓库ID
-    HF_REPO_ID_INPUT="zhengkeeling/dp" 
+    HF_REPO_ID_INPUT="zhengkeeling/b" 
     echo -e "${GREEN}[Repo ID 已自动设为: $HF_REPO_ID_INPUT]${NC}"
     
     HF_REPO_TYPE="spaces"
